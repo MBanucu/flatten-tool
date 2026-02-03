@@ -62,7 +62,7 @@
           nativeBuildInputs = [ pkgs.bun ];
           buildPhase = ''
             export HOME=$TMPDIR
-            ln -s ${nodeModules}/node_modules node_modules
+            cp -r ${nodeModules}/node_modules node_modules
             bun build ./index.ts --compile --outfile flatten-tool
           '';
           installPhase = ''
