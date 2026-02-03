@@ -11,6 +11,8 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "globby": "^16.1.0",
+    "ignore": "^7.0.5",
     "minimatch": "^10.1.1",
     "yargs": "^18.0.0"
   }

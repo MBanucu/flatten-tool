@@ -26,7 +26,7 @@ test('flattens a simple nested directory', async () => {
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
 
-  await flattenDirectory(sourceDir, sourceDir, targetDir, true); // move
+  await flattenDirectory(sourceDir, targetDir, true); // move
 
   // Check target has both files with path-based names
   const targetFiles = await readdir(targetDir);
@@ -50,7 +50,7 @@ test('handles filename conflicts', async () => {
   await writeFile(join(sourceDir, 'file.txt'), 'content1');
   await writeFile(join(sourceDir, 'subdir', 'file.txt'), 'content2');
 
-  await flattenDirectory(sourceDir, sourceDir, targetDir, true); // move
+  await flattenDirectory(sourceDir, targetDir, true); // move
 
   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file.txt', 'subdir_file.txt']);
@@ -61,7 +61,7 @@ test('copies files by default', async () => {
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
 
-  await flattenDirectory(sourceDir, sourceDir, targetDir); // copy
+  await flattenDirectory(sourceDir, targetDir); // copy
 
   // Check target has copies
   const targetFiles = await readdir(targetDir);
@@ -81,7 +81,7 @@ test('ignores files matching patterns', async () => {
   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
   await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
 
-  await flattenDirectory(sourceDir, sourceDir, targetDir, true, ['ignore.txt']); // move, ignore specific file
+  await flattenDirectory(sourceDir, targetDir, true, false, ['ignore.txt']); // move, ignore specific file
 
   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file1.txt', 'subdir_file2.txt']); // ignore.txt ignored
@@ -91,12 +91,48 @@ test('ignores files matching patterns', async () => {
   expect(sourceFiles).toEqual(['ignore.txt']);
 });
 
+test('ignores files from .gitignore by default', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
+  await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
+  await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt\n# comment\n\n*.log\n');
+
+  await flattenDirectory(sourceDir, targetDir, true); // move, should ignore from .gitignore
+
+  const targetFiles = await readdir(targetDir);
+  expect(targetFiles.sort()).toEqual(['.gitignore', 'file1.txt', 'subdir_file2.txt']); // ignore.txt ignored, .gitignore included
+
+  // Check source still has the ignored file, subdir removed since empty
+  const sourceFiles = await readdir(sourceDir);
+  expect(sourceFiles).toEqual(['ignore.txt']);
+});
+
+test('ignores files from .gitignore in subdirectories', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
+  await writeFile(join(sourceDir, 'subdir', 'ignore_in_sub.txt'), 'ignored in sub');
+  await writeFile(join(sourceDir, 'subdir', '.gitignore'), 'ignore_in_sub.txt\n');
+
+  await flattenDirectory(sourceDir, targetDir, true); // move
+
+  const targetFiles = await readdir(targetDir);
+  expect(targetFiles.sort()).toEqual(['file1.txt', 'subdir_.gitignore', 'subdir_file2.txt']); // ignore_in_sub.txt ignored
+
+  // Check source subdir still has the ignored file
+  const sourceFiles = await readdir(sourceDir);
+  expect(sourceFiles).toEqual(['subdir']);
+  const subFiles = await readdir(join(sourceDir, 'subdir'));
+  expect(subFiles).toEqual(['ignore_in_sub.txt']);
+});
+
 test('escapes underscores in path components', async () => {
   await mkdir(join(sourceDir, 'sub_dir'));
   await writeFile(join(sourceDir, 'file_1.txt'), 'content1');
   await writeFile(join(sourceDir, 'sub_dir', 'file_2.txt'), 'content2');
 
-  await flattenDirectory(sourceDir, sourceDir, targetDir, true); // move
+  await flattenDirectory(sourceDir, targetDir, true); // move
 
   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file__1.txt', 'sub__dir_file__2.txt']);

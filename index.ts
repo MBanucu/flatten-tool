@@ -1,62 +1,88 @@
 #!/usr/bin/env bun
 
-import { readdir, rename, rmdir, stat, mkdir, copyFile } from 'node:fs/promises';
-import { join, relative, sep } from 'node:path';
-import { Dirent } from 'node:fs';
+import { copyFile, rename, rm, stat, mkdir, readdir, rmdir } from 'node:fs/promises';
+import { join, relative, sep, resolve } from 'node:path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { minimatch } from 'minimatch';
+import { globby } from 'globby';
 
 function escapePathComponent(component: string): string {
   return component.replace(/_/g, '__');
 }
 
+async function removeEmptyDirs(dir: string, root?: string): Promise<void> {
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      await removeEmptyDirs(join(dir, entry.name), root);
+    }
+  }
+  if (dir !== root) {
+    try {
+      await rmdir(dir);
+    } catch {
+      // Not empty, skip
+    }
+  }
+}
+
 export async function flattenDirectory(
-  rootSource: string,
   source: string,
   target: string,
   move: boolean = false,
+  overwrite: boolean = false,
   ignorePatterns: string[] = []
 ): Promise<void> {
-  try {
-    await mkdir(target, { recursive: true });
-    const entries: Dirent[] = await readdir(source, { withFileTypes: true });
+  const absSource = resolve(source);
+  const absTarget = resolve(target);
 
-    for (const entry of entries) {
-      const srcPath: string = join(source, entry.name);
+  if (absSource === absTarget) {
+    console.log('Source and target are the same; skipping.');
+    return;
+  }
 
-      // Skip if source path is the same as target (prevent self-copy/move issues)
-      if (srcPath === target) continue;
+  await mkdir(absTarget, { recursive: true });
 
-      // Compute relative path for ignore check
-      const relPath: string = relative(rootSource, srcPath);
+  // Prepare negative patterns for additional ignores (e.g., '!*.log')
+  const negativeIgnores = ignorePatterns.map(pattern => `!${pattern}`);
 
-      // Skip if matches any ignore pattern
-      if (ignorePatterns.some(pattern => minimatch(relPath, pattern))) continue;
+  // Get all non-ignored files (respects .gitignore in the tree)
+  const files = await globby(['**', ...negativeIgnores], {
+    cwd: absSource,
+    gitignore: true,
+    absolute: true,
+    dot: true, // Include dotfiles unless ignored
+    onlyFiles: true, // Only files, not dirs
+  });
 
-      if (entry.isDirectory()) {
-        await flattenDirectory(rootSource, srcPath, target, move, ignorePatterns);
-        // Remove empty subdirectory after processing (safe for both copy and move)
-        await rmdir(srcPath).catch(() => {});
-      } else {
-        // Compute flattened name with escaped underscores
-        const components: string[] = relPath.split(sep);
-        const escapedComponents: string[] = components.map(escapePathComponent);
-        const newName: string = escapedComponents.join('_');
+  for (const srcPath of files) {
+    const relPath = relative(absSource, srcPath);
+    const components = relPath.split(sep);
+    const escapedComponents = components.map(escapePathComponent);
+    const newName = escapedComponents.join('_');
+    const tgtPath = join(absTarget, newName);
 
-        const tgtPath: string = join(target, newName);
-
-        if (move) {
-          await rename(srcPath, tgtPath);
-        } else {
-          await copyFile(srcPath, tgtPath);
-        }
+    // Check for conflicts
+    try {
+      await stat(tgtPath);
+      if (!overwrite) {
+        throw new Error(`Target file "${tgtPath}" already exists. Use --overwrite to force.`);
       }
+      console.warn(`Overwriting existing file: ${tgtPath}`);
+    } catch (err: any) {
+      if (err.code !== 'ENOENT') throw err;
     }
-  } catch (error: unknown) {
-    const err = error as Error;
-    console.error(`Error flattening ${source}: ${err.message}`);
-    process.exit(1);
+
+    if (move) {
+      await rename(srcPath, tgtPath);
+    } else {
+      await copyFile(srcPath, tgtPath);
+    }
+  }
+
+  if (move) {
+    // Clean up empty directories in source
+    await removeEmptyDirs(absSource, absSource);
   }
 }
 
@@ -81,6 +107,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           type: 'boolean',
           default: false,
         })
+        .option('overwrite', {
+          alias: 'o',
+          describe: 'Overwrite existing files in target if conflicts occur',
+          type: 'boolean',
+          default: false,
+        })
         .option('ignore', {
           alias: 'i',
           describe: 'Glob patterns to ignore (repeat --ignore for multiple, e.g., --ignore "*.log" --ignore "temp/*")',
@@ -91,20 +123,23 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const source: string = argv.source as string;
       const target: string = argv.target as string;
       const move: boolean = argv.move as boolean;
+      const overwrite: boolean = argv.overwrite as boolean;
       const ignorePatterns: string[] = argv.ignore as string[];
 
-      await stat(source).catch(() => {
+      try {
+        await stat(source);
+      } catch {
         console.error(`Source directory "${source}" does not exist.`);
         process.exit(1);
-      });
+      }
 
       const action = move ? 'moved' : 'copied';
-      await flattenDirectory(source, source, target, move, ignorePatterns);
+      await flattenDirectory(source, target, move, overwrite, ignorePatterns);
       console.log(`Directory flattened successfully (${action}) into ${target}.`);
     })
     .help('h')
     .alias('h', 'help')
-    .version('1.0.0')
+    .version('1.1.0')
     .alias('v', 'version')
     .parse();
 }
