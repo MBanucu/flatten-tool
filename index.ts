@@ -119,17 +119,16 @@ export async function flattenDirectory(
 // Main CLI logic
 if (import.meta.url === `file://${process.argv[1]}`) {
   yargs(hideBin(process.argv))
-    .command('$0 <source> [target]', 'Flatten or merge a directory structure (default: merge to Markdown, copy)', (yargs) => {
+    .command('$0 [source] [target]', 'Flatten or merge a directory structure (default source: current directory)', (yargs) => {
       yargs
         .positional('source', {
-          describe: 'The directory to flatten',
+          describe: 'Directory to flatten (default: current directory ".")',
           type: 'string',
-          demandOption: true,
+          default: '.',
         })
         .positional('target', {
-          describe: 'Where to place the flattened files or MD file (default: current directory or flattened.md when merging to Markdown)',
+          describe: 'Target file or directory. Default: flattened.md or flattened/ depending on --directory',
           type: 'string',
-          default: process.cwd(),
         })
         .option('move', {
           alias: 'm',
@@ -156,23 +155,27 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           default: false,
         })
     }, async (argv) => {
-      let source: string = argv.source as string;
-      let target: string = argv.target as string;
+      let source = argv.source as string;           // now always defined (default '.')
+      let target = argv.target as string;           // may be undefined
+
       const move: boolean = argv.move as boolean;
       const overwrite: boolean = argv.overwrite as boolean;
       const ignorePatterns: string[] = argv.ignore as string[] || [];
       const respectGitignore: boolean = argv.gitignore as boolean;
       const flattenToDirectory: boolean = argv.directory as boolean;
 
+      // If user didn't provide explicit target, choose sensible default
+      if (!target) {
+        target = flattenToDirectory
+          ? join(process.cwd(), 'flattened')
+          : join(process.cwd(), 'flattened.md');
+      }
+
       try {
         await stat(source);
       } catch {
         console.error(`Source directory "${source}" does not exist.`);
         process.exit(1);
-      }
-
-      if (!flattenToDirectory && target === process.cwd()) {
-        target = join(target, 'flattened.md');
       }
 
       const action = move ? 'moved' : 'copied';

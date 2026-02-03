@@ -4,7 +4,7 @@ This document provides essential information for AI coding agents (like opencode
 
 ## Repository Overview
 
-flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with special handling for markdown sources. By default, it merges all file contents into a single Markdown file instead of flattening to individual files.
+flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead.
 
 ## Build/Lint/Test Commands
 
@@ -35,8 +35,10 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Run Nix app: `nix run . -- <args>`
 - Install globally: `nix profile install .`
 
-### CI/CD
-- Run full CI locally: `bun test && nix build .`
+### Running the CLI
+- Run the tool directly: `bun run index.ts [args]`
+- Test CLI help: `bun run index.ts --help`
+- Test version: `bun run index.ts --version`
 
 ## Code Style Guidelines
 
@@ -61,6 +63,7 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Prefer named imports over default imports
 - Use Bun's built-in modules (e.g., `node:fs/promises`)
 - Import JSON files with `assert { type: 'json' }` for configuration: `import pkg from './package.json' assert { type: 'json' };`
+- Key dependencies: `globby` for file globbing, `yargs` for CLI parsing
 
 ### Formatting
 - Use consistent indentation (2 spaces)
@@ -119,6 +122,8 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Aim for high coverage of critical paths
 - Use descriptive test names and expect statements for clarity
 - Mock external dependencies when necessary
+- When adding new tests, follow the pattern of creating temp directories in beforeEach/afterEach
+- Test CLI behavior by running `bun run index.ts` with various arguments
 
 ### Security
 - Validate all user inputs
