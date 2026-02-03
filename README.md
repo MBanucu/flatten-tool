@@ -113,6 +113,10 @@ This project uses Bun for runtime, TypeScript for type safety, and follows the g
 
 ## Changelog
 
+### v1.5.0
+- Improved navigation: project file tree is now a clickable nested Markdown list with links to each file's content section using standard markdown anchors.
+- Simplified file headers: removed custom anchors from section headers.
+
 ### v1.4.0
 - Added project file tree to the beginning of merged Markdown output for better navigation.
 

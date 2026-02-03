@@ -165,8 +165,8 @@ test('merges files into a single md file', async () => {
   await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false); // copy, mergeMd
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt\n\n```txt\ncontent1\n```');
-  expect(mdContent).toContain('# subdir/file2.js\n\n```js\ncontent2\n```');
+  expect(mdContent).toContain('## file1.txt\n\n```txt\ncontent1\n```');
+  expect(mdContent).toContain('## subdir/file2.js\n\n```js\ncontent2\n```');
 
   // Source files still exist since copy
   expect(await readdir(sourceDir)).toContain('file1.txt');
@@ -181,8 +181,8 @@ test('merges files into md with move', async () => {
   await flattenDirectory(sourceDir, mdTarget, true, false, [], true, false); // move, mergeMd
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt\n\n```txt\ncontent1\n```');
-  expect(mdContent).toContain('# subdir/file2.js\n\n```js\ncontent2\n```');
+  expect(mdContent).toContain('## file1.txt\n\n```txt\ncontent1\n```');
+  expect(mdContent).toContain('## subdir/file2.js\n\n```js\ncontent2\n```');
 
   // Source files deleted, subdir empty and removed
   const sourceFiles = await readdir(sourceDir);
@@ -219,7 +219,7 @@ test('ignores files when merging to md', async () => {
   await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false);
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt');
+  expect(mdContent).toContain('## file1.txt');
 });
 
 test('excludes gif files by default when merging to md', async () => {
@@ -230,8 +230,8 @@ test('excludes gif files by default when merging to md', async () => {
   await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false); // merge to md
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt');
-  expect(mdContent).not.toContain('# image.gif');
+  expect(mdContent).toContain('## file1.txt');
+  expect(mdContent).not.toContain('## image.gif');
   expect(mdContent).not.toContain('fake gif content');
 });
 
@@ -255,8 +255,8 @@ test('excludes gif files in subdirs by default when merging to md', async () => 
   await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false); // merge to md
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt');
-  expect(mdContent).toContain('# subdir/file2.js');
-  expect(mdContent).not.toContain('# subdir/image.gif');
+  expect(mdContent).toContain('## file1.txt');
+  expect(mdContent).toContain('## subdir/file2.js');
+  expect(mdContent).not.toContain('## subdir/image.gif');
   expect(mdContent).not.toContain('fake gif content');
 });

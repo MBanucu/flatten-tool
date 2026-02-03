@@ -7,63 +7,65 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { globby } from 'globby';
 import pkg from './package.json' assert { type: 'json' };
-import treeify from 'treeify';
 
 function escapePathComponent(component: string): string {
   return component.replace(/_/g, '__');
 }
 
+function generateMarkdownAnchor(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove punctuation except hyphens and underscores
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+}
+
 function buildTreeObject(relPaths: string[]): any {
   const tree: any = {};
-
-  relPaths.forEach((path) => {
-    // Normalize paths
-    path = path.replace(/\\/g, '/');
-    if (path.startsWith('./')) path = path.slice(2);
-
+  for (const path of relPaths) {
     const parts = path.split('/');
     let node = tree;
-
-    parts.forEach((part, index) => {
+    const currentParts: string[] = [];
+    for (const [index, part] of parts.entries()) {
+      currentParts.push(part);
       const isDir = index < parts.length - 1;
       const key = isDir ? `${part}/` : part;
-
-      if (!node[key]) {
-        node[key] = isDir ? {} : null;
+      if (node[key] === undefined) {
+        node[key] = isDir ? {} : currentParts.join('/');
       }
-
       if (isDir) {
         node = node[key];
       }
-    });
+    }
+  }
+  return tree;
+}
+
+function renderMarkdownTree(node: any, depth: number): string {
+  let result = '';
+  const indent = '  '.repeat(depth);
+  const entries: [string, any][] = Object.entries(node);
+
+  entries.sort(([a], [b]) => {
+    const aDir = a.endsWith('/');
+    const bDir = b.endsWith('/');
+    if (aDir !== bDir) return aDir ? -1 : 1;
+    return a.toLowerCase().localeCompare(b.toLowerCase());
   });
 
-  // Recursively sort: directories first, then files, case-insensitive
-  function sortNode(node: any): void {
-    if (node === null || typeof node !== 'object') return;
-
-    const entries = Object.entries(node);
-    entries.sort(([a], [b]) => {
-      const aIsDir = a.endsWith('/');
-      const bIsDir = b.endsWith('/');
-      if (aIsDir !== bIsDir) return aIsDir ? -1 : 1; // dirs before files
-      return a.toLowerCase().localeCompare(b.toLowerCase());
-    });
-
-    // Rebuild node in sorted order (preserves insertion order for rendering)
-    const sorted: any = {};
-    entries.forEach(([key, value]) => {
-      sorted[key] = value;
-      sortNode(value);
-    });
-
-    Object.keys(node).forEach((k) => delete node[k]);
-    Object.assign(node, sorted);
+  for (const [key, value] of entries) {
+    const isDir = key.endsWith('/');
+    const display = isDir ? key.slice(0, -1) + '/' : key;
+    if (isDir) {
+      result += `${indent}- ${display}\n`;
+      result += renderMarkdownTree(value, depth + 1);
+    } else {
+      const fullPath = value as string;
+      const anchor = generateMarkdownAnchor(fullPath);
+      result += `${indent}- [${display}](#${anchor})\n`;
+    }
   }
-
-  sortNode(tree);
-
-  return tree;
+  return result;
 }
 
 async function removeEmptyDirs(dir: string, root?: string): Promise<void> {
@@ -127,42 +129,40 @@ export async function flattenDirectory(
       if (err.code !== 'ENOENT') throw err;
     }
 
-    const relPaths: string[] = files.map((srcPath) =>
-      relative(absSource, srcPath).replace(/\\/g, '/')
-    );
+    // Sort files for consistent content order
+    const fileEntries = files.map(srcPath => ({
+      srcPath,
+      relPath: relative(absSource, srcPath).replace(/\\/g, '/')
+    }));
+    fileEntries.sort((a, b) => a.relPath.toLowerCase().localeCompare(b.relPath.toLowerCase()));
 
-    // Sort paths for consistent insertion
-    relPaths.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    const relPaths = fileEntries.map(e => e.relPath);
 
+    // Build tree structure
     const treeObj = buildTreeObject(relPaths);
 
-    // Wrap with root for nice "." header (empty dirs show just ".")
-    const rootTree = { '.': treeObj };
+    // Render as clickable nested Markdown list
+    let treeMarkdown = "# Project File Tree\n\n- .\n";
+    treeMarkdown += renderMarkdownTree(treeObj, 1);
+    treeMarkdown += "\n";
 
     const writeStream = createWriteStream(absTarget);
     writeStream.setMaxListeners(0);
 
-    writeStream.write("# Project File Tree\n\n");
-    writeStream.write("```\n");
-    writeStream.write(treeify.asTree(rootTree));
-    writeStream.write("```\n\n");
+    writeStream.write(treeMarkdown);
 
-    for (const srcPath of files) {
-      const relPath = relative(absSource, srcPath).replace(/\\/g, '/');
+    // Write file contents (now in sorted order)
+    for (const { srcPath, relPath } of fileEntries) {
       let ext = extname(srcPath).slice(1) || 'text';
+      const lang = ext;
       const isMd = ['md', 'markdown'].includes(ext.toLowerCase());
       const ticks = isMd ? '````' : '```';
 
-      // Write header synchronously
-      writeStream.write(`# ${relPath}\n\n${ticks}${ext}\n`);
+      writeStream.write(`## ${relPath}\n\n${ticks}${lang}\n`);
 
-      // Stream file content (preserve original UTF-8 text behavior)
       const readStream = createReadStream(srcPath, { encoding: 'utf8' });
-
-      // Pipe with { end: false } so writeStream stays open for next files
       await pipeline(readStream, writeStream, { end: false });
 
-      // Write closing fence
       writeStream.write(`\n${ticks}\n\n`);
     }
 

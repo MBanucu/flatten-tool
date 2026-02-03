@@ -4,9 +4,9 @@ This document provides essential information for AI coding agents (like opencode
 
 ## Repository Overview
 
-flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with a project file tree at the top and special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead.
+flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with a clickable project file tree at the top and special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead.
 
-Version: 1.4.0
+Version: 1.5.0
 
 ## Build/Lint/Test Commands
 
@@ -53,8 +53,8 @@ Version: 1.4.0
 - **Package Manager**: Bun (use `bun.lock` for lockfile)
 
 ### File Structure
-- `index.ts`: Main CLI entry point with yargs CLI parsing and flattenDirectory function
-- `test/`: Test files with `.test.ts` extension
+- `index.ts`: Main CLI entry point with yargs CLI parsing, flattenDirectory function, and helper functions (buildTreeObject, renderMarkdownTree, removeEmptyDirs)
+- `test/`: Test files with `.test.ts` extension using Bun's test framework
 - `AGENTS.md`: Coding guidelines for AI agents (this file)
 - `flake.nix`: Nix package definition
 - `package.json`: Project metadata with Bun dependencies
@@ -68,7 +68,7 @@ Version: 1.4.0
 - Prefer named imports over default imports
 - Use Bun's built-in modules (e.g., `node:fs/promises`, `node:fs` for streams, `node:stream/promises` for pipeline utilities)
 - Import JSON files with `assert { type: 'json' }` for configuration: `import pkg from './package.json' assert { type: 'json' };`
-- Key dependencies: `globby` for file globbing, `yargs` for CLI parsing, `ignore` for gitignore support, `minimatch` for pattern matching, `treeify` for rendering file trees
+- Key dependencies: `globby` for file globbing, `yargs` for CLI parsing, `ignore` for gitignore support, `minimatch` for pattern matching
 
 ### Formatting
 - Use consistent indentation (2 spaces)
@@ -78,6 +78,7 @@ Version: 1.4.0
 - Semicolons: always
 - No trailing whitespace
 - One blank line between functions and blocks
+- Empty line after imports before first function/class
 
 ### Types and TypeScript
 - Use explicit types for function parameters and return values
@@ -87,6 +88,8 @@ Version: 1.4.0
 - Type assertions only when necessary (prefer type guards)
 - Use `const` assertions for readonly arrays/objects
 - Leverage Bun's type definitions
+- Use JSDoc comments for public APIs with parameter descriptions
+- Use `Promise<void>` for async functions that don't return values
 
 ### Naming Conventions
 - **Variables/Functions**: camelCase (`flattenDirectory`, `escapePathComponent`)
@@ -105,6 +108,14 @@ Version: 1.4.0
 - Early returns to reduce nesting
 - Keep functions focused and under 50 lines
 
+### Tree Rendering and Linking
+- Use `buildTreeObject()` to create nested tree structures from file paths
+- Use `renderMarkdownTree()` to generate clickable nested Markdown lists
+- Generate standard markdown anchors using `generateMarkdownAnchor()`: converts to lowercase, removes punctuation except hyphens/underscores, replaces spaces with hyphens
+- File content headers use format: `## ${relPath}`
+- Tree links use format: `[${display}](#${anchor})` pointing to standard markdown-generated anchors
+- Sort tree entries: directories first, then files, case-insensitive alphabetical
+
 ### Error Handling
 - Use try-catch for synchronous errors
 - Async functions handle rejections (Bun handles uncaught rejections)
@@ -112,6 +123,7 @@ Version: 1.4.0
 - Validate inputs early
 - Exit with appropriate codes (0 success, 1 error)
 - Handle file system errors gracefully (e.g., ENOENT)
+- Use `err.code` checks for specific error types
 
 ### Asynchronous Code
 - Use `async`/`await` over Promises when possible
@@ -140,6 +152,8 @@ Version: 1.4.0
 - Test CLI behavior by running `bun run index.ts` with various arguments
 - Test error conditions with `expect(...).rejects.toThrow()`
 - Use specific test names for targeted runs
+- Test file content assertions use exact string matches including headers and code fences
+- Test directory flattening by checking file existence and content in target directories
 
 ### Security
 - Validate all user inputs
@@ -212,5 +226,5 @@ Update this file when:
 - Build system changes (e.g., Nix flake updates)
 - Dependencies are added/removed
 
-Last updated: 2026-02-03</content>
+Last updated: 2026-02-04</content>
 <parameter name="filePath">/home/michi/dev/flatten-tool/AGENTS.md
