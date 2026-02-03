@@ -27,12 +27,29 @@
             ;
         };
 
-        # Create node_modules as a separate derivation using Nix expressions
+        # Function to get package directory name from full name
+        packageName =
+          name:
+          let
+            parts = builtins.split "@" name;
+          in
+          if builtins.length parts >= 3 && builtins.elemAt parts 0 == "" then
+            "@" + builtins.elemAt parts 1 + "/" + builtins.elemAt parts 2
+          else
+            builtins.elemAt parts 0;
+
+        # Create node_modules as a separate derivation by unpacking packages
         nodeModules = pkgs.runCommand "flatten-tool-node-modules" { } ''
           mkdir -p $out/node_modules
           ${builtins.concatStringsSep "\n" (
             builtins.attrValues (
-              builtins.mapAttrs (name: path: "ln -s ${path} $out/node_modules/${name}") bunPkgs
+              builtins.mapAttrs (
+                name: path:
+                let
+                  pkgDir = packageName name;
+                in
+                "mkdir -p $out/node_modules/${pkgDir}; tar -xzf ${path} -C $out/node_modules/${pkgDir} --strip-components=1"
+              ) bunPkgs
             )
           )}
         '';
