@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-
 import { copyFile, rename, rm, stat, mkdir, readdir, rmdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative, sep, resolve, extname } from 'node:path';
 import yargs from 'yargs';
@@ -71,8 +69,10 @@ export async function flattenDirectory(
     for (const srcPath of files) {
       const relPath = relative(absSource, srcPath).replace(/\\/g, '/'); // Normalize to forward slashes
       const content = await readFile(srcPath, 'utf8');
-      const ext = extname(srcPath).slice(1) || 'text';
-      mdContent += `# ${relPath}\n\n\`\`\`${ext}\n${content}\n\`\`\`\n\n`;
+      let ext = extname(srcPath).slice(1) || 'text';
+      const isMd = ['md', 'markdown'].includes(ext.toLowerCase());
+      const ticks = isMd ? '````' : '```';
+      mdContent += `# ${relPath}\n\n${ticks}${ext}\n${content}\n${ticks}\n\n`;
     }
 
     await writeFile(absTarget, mdContent);

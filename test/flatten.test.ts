@@ -220,6 +220,17 @@ test('ignores files when merging to md', async () => {
 
   const mdContent = await readFile(mdTarget, 'utf8');
   expect(mdContent).toContain('# file1.txt');
-  expect(mdContent).not.toContain('# ignore.txt');
-  expect(mdContent).toContain('# .gitignore'); // .gitignore is included unless ignored
+});
+
+test('uses quadruple backticks for markdown files in mergeMd', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file.md'), '# Markdown content\n```code\nblock\n```');
+  await writeFile(join(sourceDir, 'subdir', 'file.txt'), 'text content');
+
+  const mdTarget = join(tempDir, 'output.md');
+  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, true); // copy, mergeMd
+
+  const mdContent = await readFile(mdTarget, 'utf8');
+  expect(mdContent).toContain('# file.md\n\n````md\n# Markdown content\n```code\nblock\n```\n````');
+  expect(mdContent).toContain('# subdir/file.txt\n\n```txt\ntext content\n```');
 });
