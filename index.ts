@@ -53,6 +53,7 @@ export async function flattenDirectory(
     absolute: true,
     dot: true, // Include dotfiles unless ignored
     onlyFiles: true, // Only files, not dirs
+    ignore: ['.git'], // Always ignore .git directory
   });
 
   for (const srcPath of files) {
