@@ -18,51 +18,19 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        bunPkgs = import ./bun-packages.nix {
-          inherit (pkgs)
-            copyPathToStore
-            fetchFromGitHub
-            fetchgit
-            fetchurl
-            ;
+        bunPackages = bun2nix.lib.${system}.mkBunPackageSet {
+          pname = "flatten-tool";
+          src = ./.;
         };
-
-        # Function to get package directory name from full name
-        packageName =
-          name:
-          let
-            parts = builtins.filter builtins.isString (builtins.split "@" name);
-          in
-          if builtins.length parts >= 3 && builtins.head parts == "" then
-            "@" + builtins.elemAt parts 1 + "/" + builtins.elemAt parts 2
-          else
-            builtins.head parts;
-
-        # Create node_modules as a separate derivation by unpacking packages
-        nodeModules = pkgs.runCommand "flatten-tool-node-modules" { } ''
-          mkdir -p $out/node_modules
-          ${builtins.concatStringsSep "\n" (
-            builtins.attrValues (
-              builtins.mapAttrs (
-                name: path:
-                let
-                  pkgDir = packageName name;
-                in
-                "mkdir -p $out/node_modules/${pkgDir}; tar -xzf ${path} -C $out/node_modules/${pkgDir} --strip-components=1"
-              ) bunPkgs
-            )
-          )}
-        '';
       in
       {
         packages.flatten-tool = pkgs.stdenv.mkDerivation {
           pname = "flatten-tool";
           version = "1.0.0";
           src = ./.;
-          nativeBuildInputs = [ pkgs.bun ];
+          nativeBuildInputs = [ bunPackages.bun ];
           buildPhase = ''
             export HOME=$TMPDIR
-            cp -r ${nodeModules}/node_modules node_modules
             bun build ./index.ts --compile --outfile flatten-tool
           '';
           installPhase = ''
