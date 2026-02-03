@@ -4,6 +4,8 @@
 
 A CLI utility to flatten directory structures.
 
+[![asciicast](docs/demo.gif)](https://asciinema.org/a/ThswNC1vrdlK0wdD)
+
 ## Installation
 
 Requires [Bun](https://bun.sh) runtime (v1.1+).
@@ -110,6 +112,9 @@ bun test -t "flattens a simple nested directory"
 This project uses Bun for runtime, TypeScript for type safety, and follows the guidelines in `AGENTS.md` for coding standards.
 
 ## Changelog
+
+### v1.2.3
+- Added demo.gif to docs/ and linked in README.md.
 
 ### v1.2.2
 - Added `setMaxListeners(0)` on WriteStream in Markdown merging to silence listener warnings when processing many files.
