@@ -4,7 +4,7 @@ This document provides essential information for AI coding agents (like opencode
 
 ## Repository Overview
 
-flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, and is designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, and optional file overwriting.
+flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, and is designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, and optional file overwriting or gitignore disabling.
 
 ## Build/Lint/Test Commands
 
@@ -61,6 +61,8 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Avoid relative imports for non-local files
 - Prefer named imports over default imports
 - Use Bun's built-in modules when possible (e.g., `node:fs/promises`)
+- Import JSON files with `assert { type: 'json' }` for configuration (e.g., package.json)
+- Use globby for efficient file globbing with .gitignore support
 
 ### Formatting
 - Use consistent indentation (2 spaces)
@@ -112,7 +114,8 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 ### CLI and User Interaction
 - Use yargs for CLI parsing
 - Provide helpful `--help` output
-- Support `--version` flag
+- Support `--version` flag (dynamically read from package.json)
+- Support `--overwrite` for file conflicts, `--gitignore` to toggle .gitignore respect
 - Use stderr for errors, stdout for normal output
 - Exit codes: 0 success, 1 error
 - Progress indicators for long operations
