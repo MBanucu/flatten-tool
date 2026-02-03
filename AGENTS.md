@@ -6,7 +6,7 @@ This document provides essential information for AI coding agents (like opencode
 
 flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead.
 
-Version: 1.2.3
+Version: 1.3.0
 
 ## Build/Lint/Test Commands
 
@@ -20,14 +20,14 @@ Version: 1.2.3
 - Run tests in watch mode: `bun test --watch`
 - Run a specific test file: `bun test test/flatten.test.ts`
 - Run a single test by name: `bun test -t "flattens a simple nested directory"`
-- Run tests with coverage: `bun test --coverage` (if configured)
+- Run tests with coverage: `bun test --coverage`
 - Debug tests: `bun test --inspect`
 - Run tests matching a pattern: `bun test -t "handles filename"`
 
 ### Building
 - No explicit build step required for development (Bun handles TypeScript directly)
 - For production binary: `bun build ./index.ts --compile --outfile flatten-tool`
-- For Nix package: `nix build` (copies source files and creates wrapper)
+- For Nix package: `nix build`
 - Type checking: No tsconfig.json configured; Bun handles TypeScript compilation
 
 ### Linting and Formatting
@@ -212,5 +212,5 @@ Update this file when:
 - Build system changes (e.g., Nix flake updates)
 - Dependencies are added/removed
 
-Last updated: 2026-02-04</content>
+Last updated: 2026-02-03</content>
 <parameter name="filePath">/home/michi/dev/flatten-tool/AGENTS.md

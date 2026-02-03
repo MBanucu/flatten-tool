@@ -47,13 +47,18 @@ export async function flattenDirectory(
 
   const negativeIgnores = ignorePatterns.map(pattern => `!${pattern}`);
 
+  const ignoreFiles = ['.git'];
+  if (!flattenToDirectory) {
+    ignoreFiles.push('*.gif');
+  }
+
   const files = await globby(['**', ...negativeIgnores], {
     cwd: absSource,
     gitignore: respectGitignore,
     absolute: true,
     dot: true,
     onlyFiles: true,
-    ignore: ['.git'],
+    ignore: ignoreFiles,
   });
 
   if (!flattenToDirectory) {

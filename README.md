@@ -113,6 +113,9 @@ This project uses Bun for runtime, TypeScript for type safety, and follows the g
 
 ## Changelog
 
+### v1.3.0
+- Excluded GIF files by default when merging to Markdown to prevent binary content corruption.
+
 ### v1.2.3
 - Added demo.gif to docs/ and linked in README.md.
 

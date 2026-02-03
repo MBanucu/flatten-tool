@@ -222,15 +222,25 @@ test('ignores files when merging to md', async () => {
   expect(mdContent).toContain('# file1.txt');
 });
 
-test('uses quadruple backticks for markdown files in mergeMd', async () => {
-  await mkdir(join(sourceDir, 'subdir'));
-  await writeFile(join(sourceDir, 'file.md'), '# Markdown content\n```code\nblock\n```');
-  await writeFile(join(sourceDir, 'subdir', 'file.txt'), 'text content');
+test('excludes gif files by default when merging to md', async () => {
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'image.gif'), 'fake gif content');
 
   const mdTarget = join(tempDir, 'output.md');
-  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false); // copy, mergeMd
+  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false); // merge to md
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file.md\n\n````md\n# Markdown content\n```code\nblock\n```\n````');
-  expect(mdContent).toContain('# subdir/file.txt\n\n```txt\ntext content\n```');
+  expect(mdContent).toContain('# file1.txt');
+  expect(mdContent).not.toContain('# image.gif');
+  expect(mdContent).not.toContain('fake gif content');
+});
+
+test('includes gif files when flattening to directory', async () => {
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'image.gif'), 'fake gif content');
+
+  await flattenDirectory(sourceDir, targetDir, false, false, [], true, true); // flatten to directory
+
+  const targetFiles = await readdir(targetDir);
+  expect(targetFiles.sort()).toEqual(['file1.txt', 'image.gif']);
 });
