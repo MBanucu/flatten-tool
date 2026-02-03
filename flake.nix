@@ -16,11 +16,14 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+
+        # Read and parse package.json
+        pkgJson = builtins.fromJSON (builtins.readFile ./package.json);
       in
       {
         packages.flatten-tool = pkgs.stdenv.mkDerivation {
-          pname = "flatten-tool";
-          version = "1.0.0";
+          pname = pkgJson.name or "flatten-tool"; # Fallback if no 'name' in package.json
+          version = pkgJson.version or "0.0.0"; # Fallback if no 'version'
           src = ./.;
           nativeBuildInputs = [ pkgs.bun ];
           buildInputs = [ pkgs.makeWrapper ];
