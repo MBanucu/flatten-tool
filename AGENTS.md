@@ -4,7 +4,7 @@ This document provides essential information for AI coding agents (like opencode
 
 ## Repository Overview
 
-flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns and is designed for reproducibility.
+flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, and is designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, and optional file overwriting.
 
 ## Build/Lint/Test Commands
 
@@ -50,6 +50,7 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 ### File Structure
 - `index.ts`: Main CLI entry point
 - `test/`: Test files with `.test.ts` extension
+- `AGENTS.md`: Coding guidelines for AI agents (this file)
 - `flake.nix`: Nix package definition
 - `bun-packages.nix`: Bun dependency expressions (generated)
 - `.gitignore`: Standard ignores including `node_modules`, `result`, etc.
@@ -166,6 +167,10 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Test-driven development for new features
 - Code review before merging
 
+## IDE and AI Assistant Rules
+
+No Cursor rules (.cursor/rules/ or .cursorrules) or Copilot instructions (.github/copilot-instructions.md) are defined in this repository. Agents should follow the guidelines in this AGENTS.md file.
+
 ## Agent-Specific Notes
 
 ### opencode (this agent)
@@ -191,4 +196,4 @@ Update this file when:
 - New team members join
 - Major refactors change patterns
 
-Last updated: 2026-02-03
+Last updated: 2026-02-19
