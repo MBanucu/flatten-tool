@@ -16,7 +16,7 @@ npm install -g flatten-tool
 
 ## Usage
 
-By default, the tool merges all file contents into a single Markdown file, with each file's content placed under a header with its relative path, followed by a code block with appropriate language highlighting based on the file extension. Ignores and filters are applied as usual.
+By default, the tool merges all file contents into a single Markdown file, starting with a project file tree for navigation, followed by each file's content under a header with its relative path, in a code block with appropriate language highlighting based on the file extension. Ignores and filters are applied as usual.
 
 The `<source>` argument is optional and defaults to the current directory (`.`). The `<target>` argument is also optional and defaults to `flattened.md` (or `flattened/` when using `--directory`).
 
@@ -112,6 +112,9 @@ bun test -t "flattens a simple nested directory"
 This project uses Bun for runtime, TypeScript for type safety, and follows the guidelines in `AGENTS.md` for coding standards.
 
 ## Changelog
+
+### v1.4.0
+- Added project file tree to the beginning of merged Markdown output for better navigation.
 
 ### v1.3.1
 - Fixed GIF exclusion pattern to work recursively in subdirectories.

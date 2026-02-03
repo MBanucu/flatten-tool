@@ -4,9 +4,9 @@ This document provides essential information for AI coding agents (like opencode
 
 ## Repository Overview
 
-flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead.
+flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with a project file tree at the top and special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead.
 
-Version: 1.3.1
+Version: 1.4.0
 
 ## Build/Lint/Test Commands
 
@@ -68,7 +68,7 @@ Version: 1.3.1
 - Prefer named imports over default imports
 - Use Bun's built-in modules (e.g., `node:fs/promises`, `node:fs` for streams, `node:stream/promises` for pipeline utilities)
 - Import JSON files with `assert { type: 'json' }` for configuration: `import pkg from './package.json' assert { type: 'json' };`
-- Key dependencies: `globby` for file globbing, `yargs` for CLI parsing, `ignore` for gitignore support, `minimatch` for pattern matching
+- Key dependencies: `globby` for file globbing, `yargs` for CLI parsing, `ignore` for gitignore support, `minimatch` for pattern matching, `treeify` for rendering file trees
 
 ### Formatting
 - Use consistent indentation (2 spaces)

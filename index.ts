@@ -7,9 +7,63 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { globby } from 'globby';
 import pkg from './package.json' assert { type: 'json' };
+import treeify from 'treeify';
 
 function escapePathComponent(component: string): string {
   return component.replace(/_/g, '__');
+}
+
+function buildTreeObject(relPaths: string[]): any {
+  const tree: any = {};
+
+  relPaths.forEach((path) => {
+    // Normalize paths
+    path = path.replace(/\\/g, '/');
+    if (path.startsWith('./')) path = path.slice(2);
+
+    const parts = path.split('/');
+    let node = tree;
+
+    parts.forEach((part, index) => {
+      const isDir = index < parts.length - 1;
+      const key = isDir ? `${part}/` : part;
+
+      if (!node[key]) {
+        node[key] = isDir ? {} : null;
+      }
+
+      if (isDir) {
+        node = node[key];
+      }
+    });
+  });
+
+  // Recursively sort: directories first, then files, case-insensitive
+  function sortNode(node: any): void {
+    if (node === null || typeof node !== 'object') return;
+
+    const entries = Object.entries(node);
+    entries.sort(([a], [b]) => {
+      const aIsDir = a.endsWith('/');
+      const bIsDir = b.endsWith('/');
+      if (aIsDir !== bIsDir) return aIsDir ? -1 : 1; // dirs before files
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
+
+    // Rebuild node in sorted order (preserves insertion order for rendering)
+    const sorted: any = {};
+    entries.forEach(([key, value]) => {
+      sorted[key] = value;
+      sortNode(value);
+    });
+
+    Object.keys(node).forEach((k) => delete node[k]);
+    Object.assign(node, sorted);
+  }
+
+  sortNode(tree);
+
+  return tree;
 }
 
 async function removeEmptyDirs(dir: string, root?: string): Promise<void> {
@@ -52,7 +106,7 @@ export async function flattenDirectory(
     ignoreFiles.push('**/*.gif');
   }
 
-  const files = await globby(['**', ...negativeIgnores], {
+   const files = await globby(['**', ...negativeIgnores], {
     cwd: absSource,
     gitignore: respectGitignore,
     absolute: true,
@@ -73,8 +127,25 @@ export async function flattenDirectory(
       if (err.code !== 'ENOENT') throw err;
     }
 
+    const relPaths: string[] = files.map((srcPath) =>
+      relative(absSource, srcPath).replace(/\\/g, '/')
+    );
+
+    // Sort paths for consistent insertion
+    relPaths.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+    const treeObj = buildTreeObject(relPaths);
+
+    // Wrap with root for nice "." header (empty dirs show just ".")
+    const rootTree = { '.': treeObj };
+
     const writeStream = createWriteStream(absTarget);
     writeStream.setMaxListeners(0);
+
+    writeStream.write("# Project File Tree\n\n");
+    writeStream.write("```\n");
+    writeStream.write(treeify.asTree(rootTree));
+    writeStream.write("```\n\n");
 
     for (const srcPath of files) {
       const relPath = relative(absSource, srcPath).replace(/\\/g, '/');
