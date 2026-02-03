@@ -7,14 +7,37 @@
     bun2nix.url = "github:nix-community/bun2nix";
   };
 
-  outputs = { self, nixpkgs, flake-utils, bun2nix }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      bun2nix,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         bunPkgs = import ./bun-packages.nix {
-          inherit (pkgs) copyPathToStore fetchFromGitHub fetchgit fetchurl;
+          inherit (pkgs)
+            copyPathToStore
+            fetchFromGitHub
+            fetchgit
+            fetchurl
+            ;
         };
-      in {
+
+        # Create node_modules as a separate derivation using Nix expressions
+        nodeModules = pkgs.runCommand "flatten-tool-node-modules" { } ''
+          mkdir -p $out/node_modules
+          ${builtins.concatStringsSep "\n" (
+            builtins.attrValues (
+              builtins.mapAttrs (name: path: "ln -s ${path} $out/node_modules/${name}") bunPkgs
+            )
+          )}
+        '';
+      in
+      {
         packages.flatten-tool = pkgs.stdenv.mkDerivation {
           pname = "flatten-tool";
           version = "1.0.0";
@@ -22,10 +45,7 @@
           nativeBuildInputs = [ pkgs.bun ];
           buildPhase = ''
             export HOME=$TMPDIR
-            mkdir node_modules
-            for pkg in ${builtins.concatStringsSep " " (builtins.attrNames bunPkgs)}; do
-              ln -s ${bunPkgs.$pkg} node_modules/$pkg
-            done
+            ln -s ${nodeModules}/node_modules node_modules
             bun build ./index.ts --compile --outfile flatten-tool
           '';
           installPhase = ''
