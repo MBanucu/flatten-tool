@@ -4,7 +4,7 @@ This document provides essential information for AI coding agents (like opencode
 
 ## Repository Overview
 
-flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with special handling for markdown sources.
+flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with special handling for markdown sources. By default, it merges all file contents into a single Markdown file instead of flattening to individual files.
 
 ## Build/Lint/Test Commands
 
@@ -114,9 +114,11 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 ### Testing
 - Use Bun's test framework
 - Test files: `*.test.ts` in `test/` directory
-- Use `beforeEach`/`afterEach` for setup/teardown
+- Use `beforeEach`/`afterEach` for setup/teardown (e.g., create temp directories)
 - Test both success and error cases
 - Aim for high coverage of critical paths
+- Use descriptive test names and expect statements for clarity
+- Mock external dependencies when necessary
 
 ### Security
 - Validate all user inputs
@@ -150,6 +152,8 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Avoid magic numbers/strings
 - Handle edge cases gracefully
 - Test-driven development for new features
+- Follow security best practices: never introduce code that exposes or logs secrets and keys
+- Always follow security best practices. Never introduce code that exposes or logs secrets and keys. Never commit secrets or keys to the repository.
 
 ## IDE and AI Assistant Rules
 
