@@ -6,7 +6,7 @@ This document provides essential information for AI coding agents (like opencode
 
 flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead.
 
-Version: 1.2.0
+Version: 1.2.2
 
 ## Build/Lint/Test Commands
 
@@ -66,7 +66,7 @@ Version: 1.2.0
 - Group imports: standard library (node:*), third-party, local
 - Avoid relative imports for non-local files
 - Prefer named imports over default imports
-- Use Bun's built-in modules (e.g., `node:fs/promises`, `node:fs` for streams)
+- Use Bun's built-in modules (e.g., `node:fs/promises`, `node:fs` for streams, `node:stream/promises` for pipeline utilities)
 - Import JSON files with `assert { type: 'json' }` for configuration: `import pkg from './package.json' assert { type: 'json' };`
 - Key dependencies: `globby` for file globbing, `yargs` for CLI parsing, `ignore` for gitignore support, `minimatch` for pattern matching
 
@@ -118,6 +118,7 @@ Version: 1.2.0
 - Handle concurrent operations with `Promise.all` where appropriate
 - Use `for await` for async iterators
 - Avoid mixing promises and callbacks
+- Use `pipeline` and `finished` from `node:stream/promises` for efficient streaming I/O operations
 
 ### CLI and User Interaction
 - Use yargs for CLI parsing
@@ -148,7 +149,7 @@ Version: 1.2.0
 - Avoid logging sensitive information
 
 ### Performance
-- Use streaming for large file operations (as implemented in Markdown merging)
+- Use streaming for large file operations (as implemented in Markdown merging with `pipeline` and `finished`)
 - Batch I/O operations when possible
 - Avoid unnecessary allocations
 - Prefer built-in Bun/Node APIs for performance
@@ -211,5 +212,5 @@ Update this file when:
 - Build system changes (e.g., Nix flake updates)
 - Dependencies are added/removed
 
-Last updated: 2026-02-03</content>
+Last updated: 2026-02-04</content>
 <parameter name="filePath">/home/michi/dev/flatten-tool/AGENTS.md

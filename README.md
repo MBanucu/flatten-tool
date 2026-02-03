@@ -111,6 +111,12 @@ This project uses Bun for runtime, TypeScript for type safety, and follows the g
 
 ## Changelog
 
+### v1.2.2
+- Added `setMaxListeners(0)` on WriteStream in Markdown merging to silence listener warnings when processing many files.
+
+### v1.2.1
+- Fixed memory leak warnings in Markdown merging by refactoring to use `pipeline` and `finished` from `node:stream/promises`.
+
 ### v1.2.0
 - Implemented streaming for Markdown merging to improve memory efficiency for large files/directories.
 - Updated documentation and coding guidelines.

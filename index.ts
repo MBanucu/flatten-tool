@@ -2,6 +2,7 @@
 import { copyFile, rename, rm, stat, mkdir, readdir, rmdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative, sep, resolve, extname } from 'node:path';
 import { createReadStream, createWriteStream } from 'node:fs';
+import { pipeline, finished } from 'node:stream/promises';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { globby } from 'globby';
@@ -68,6 +69,7 @@ export async function flattenDirectory(
     }
 
     const writeStream = createWriteStream(absTarget);
+    writeStream.setMaxListeners(0);
 
     for (const srcPath of files) {
       const relPath = relative(absSource, srcPath).replace(/\\/g, '/');
@@ -75,32 +77,22 @@ export async function flattenDirectory(
       const isMd = ['md', 'markdown'].includes(ext.toLowerCase());
       const ticks = isMd ? '````' : '```';
 
-      // Header + opening fence
+      // Write header synchronously
       writeStream.write(`# ${relPath}\n\n${ticks}${ext}\n`);
 
-      // Stream file content as UTF-8 text (matches previous readFile(..., 'utf8') behavior)
+      // Stream file content (preserve original UTF-8 text behavior)
       const readStream = createReadStream(srcPath, { encoding: 'utf8' });
 
-      await new Promise<void>((resolve, reject) => {
-        readStream.pipe(writeStream, { end: false });
+      // Pipe with { end: false } so writeStream stays open for next files
+      await pipeline(readStream, writeStream, { end: false });
 
-        readStream.on('end', () => {
-          // Closing fence + trailing newlines
-          writeStream.write(`\n${ticks}\n\n`);
-          resolve();
-        });
-
-        readStream.on('error', reject);
-        writeStream.on('error', reject);
-      });
+      // Write closing fence
+      writeStream.write(`\n${ticks}\n\n`);
     }
 
-    // Finalise the output file
-    await new Promise<void>((resolve, reject) => {
-      writeStream.end();
-      writeStream.on('close', resolve);
-      writeStream.on('error', reject);
-    });
+    // Close the output file and wait for it to finish
+    writeStream.end();
+    await finished(writeStream);
 
     if (move) {
       for (const srcPath of files) {
