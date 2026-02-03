@@ -32,7 +32,7 @@ export async function flattenDirectory(
   overwrite: boolean = false,
   ignorePatterns: string[] = [],
   respectGitignore: boolean = true,
-  mergeMd: boolean = true
+  flattenToDirectory: boolean = false
 ): Promise<void> {
   const absSource = resolve(source);
   const absTarget = resolve(target);
@@ -53,7 +53,7 @@ export async function flattenDirectory(
     ignore: ['.git'],
   });
 
-  if (mergeMd) {
+  if (!flattenToDirectory) {
     // Check if target exists
     try {
       await stat(absTarget);
@@ -127,7 +127,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           demandOption: true,
         })
         .positional('target', {
-          describe: 'Where to place the flattened files or MD file (default: current directory or flattened.md for --merge-md)',
+          describe: 'Where to place the flattened files or MD file (default: current directory or flattened.md when merging to Markdown)',
           type: 'string',
           default: process.cwd(),
         })
@@ -149,11 +149,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           type: 'boolean',
           default: true,
         })
-        .option('merge-md', {
-          describe: 'Merge file contents into a single Markdown file instead of flattening to individual files (default: true). Use --no-merge-md for individual files.',
+        .option('directory', {
+          alias: 'd',
+          describe: 'Flatten files into a directory structure (escaped filenames). When not set, merges everything into a single Markdown file (default behavior).',
           type: 'boolean',
-          default: true,
-        });
+          default: false,
+        })
     }, async (argv) => {
       let source: string = argv.source as string;
       let target: string = argv.target as string;
@@ -161,7 +162,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const overwrite: boolean = argv.overwrite as boolean;
       const ignorePatterns: string[] = argv.ignore as string[] || [];
       const respectGitignore: boolean = argv.gitignore as boolean;
-      const mergeMd: boolean = argv.mergeMd as boolean;
+      const flattenToDirectory: boolean = argv.directory as boolean;
 
       try {
         await stat(source);
@@ -170,13 +171,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         process.exit(1);
       }
 
-      if (mergeMd && target === process.cwd()) {
+      if (!flattenToDirectory && target === process.cwd()) {
         target = join(target, 'flattened.md');
       }
 
       const action = move ? 'moved' : 'copied';
-      await flattenDirectory(source, target, move, overwrite, ignorePatterns, respectGitignore, mergeMd);
-      console.log(`Directory flattened successfully (${action}) into ${target}.`);
+      const mode = flattenToDirectory ? 'directory' : 'Markdown file';
+      await flattenDirectory(source, target, move, overwrite, ignorePatterns, respectGitignore, flattenToDirectory);
+      console.log(`Directory flattened successfully (${action}) into ${target} (${mode}).`);
     })
     .help('h')
     .alias('h', 'help')

@@ -24,7 +24,7 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 ### Building
 - No explicit build step required for development (Bun handles TypeScript directly)
 - For production binary: `bun build ./index.ts --compile --outfile flatten-tool`
-- Type checking: No tsconfig.json configured; skip or add one if needed
+- Type checking: No tsconfig.json configured; Bun handles TypeScript compilation
 
 ### Linting and Formatting
 - No ESLint or Prettier configured in this repository
@@ -60,7 +60,7 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Avoid relative imports for non-local files
 - Prefer named imports over default imports
 - Use Bun's built-in modules (e.g., `node:fs/promises`)
-- Import JSON files with `assert { type: 'json' }` for configuration
+- Import JSON files with `assert { type: 'json' }` for configuration: `import pkg from './package.json' assert { type: 'json' };`
 
 ### Formatting
 - Use consistent indentation (2 spaces)
@@ -152,7 +152,6 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Avoid magic numbers/strings
 - Handle edge cases gracefully
 - Test-driven development for new features
-- Follow security best practices: never introduce code that exposes or logs secrets and keys
 - Always follow security best practices. Never introduce code that exposes or logs secrets and keys. Never commit secrets or keys to the repository.
 
 ## IDE and AI Assistant Rules

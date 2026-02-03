@@ -26,7 +26,7 @@ test('flattens a simple nested directory', async () => {
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
    await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
 
-   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, true); // move
 
    // Check target has both files with path-based names
   const targetFiles = await readdir(targetDir);
@@ -50,7 +50,7 @@ test('handles filename conflicts', async () => {
   await writeFile(join(sourceDir, 'file.txt'), 'content1');
    await writeFile(join(sourceDir, 'subdir', 'file.txt'), 'content2');
 
-   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, true); // move
 
    const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file.txt', 'subdir_file.txt']);
@@ -61,7 +61,7 @@ test('copies files by default', async () => {
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
    await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
 
-   await flattenDirectory(sourceDir, targetDir, false, false, [], true, false); // copy
+   await flattenDirectory(sourceDir, targetDir, false, false, [], true, true); // copy
 
    // Check target has copies
   const targetFiles = await readdir(targetDir);
@@ -81,7 +81,7 @@ test('ignores files matching patterns', async () => {
   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
    await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
 
-   await flattenDirectory(sourceDir, targetDir, true, false, ['ignore.txt'], true, false); // move, ignore specific file
+   await flattenDirectory(sourceDir, targetDir, true, false, ['ignore.txt'], true, true); // move, ignore specific file
 
    const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file1.txt', 'subdir_file2.txt']); // ignore.txt ignored
@@ -98,7 +98,7 @@ test('ignores files from .gitignore by default', async () => {
   await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
    await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt\n# comment\n\n*.log\n');
 
-   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move, should ignore from .gitignore
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, true); // move, should ignore from .gitignore
 
    const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['.gitignore', 'file1.txt', 'subdir_file2.txt']); // ignore.txt ignored, .gitignore included
@@ -115,7 +115,7 @@ test('ignores files from .gitignore in subdirectories', async () => {
   await writeFile(join(sourceDir, 'subdir', 'ignore_in_sub.txt'), 'ignored in sub');
    await writeFile(join(sourceDir, 'subdir', '.gitignore'), 'ignore_in_sub.txt\n');
 
-   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, true); // move
 
    const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file1.txt', 'subdir_.gitignore', 'subdir_file2.txt']); // ignore_in_sub.txt ignored
@@ -132,7 +132,7 @@ test('escapes underscores in path components', async () => {
   await writeFile(join(sourceDir, 'file_1.txt'), 'content1');
    await writeFile(join(sourceDir, 'sub_dir', 'file_2.txt'), 'content2');
 
-   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, true); // move
 
    const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file__1.txt', 'sub__dir_file__2.txt']);
@@ -145,7 +145,7 @@ test('does not ignore files from .gitignore when respectGitignore=false', async 
   await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
    await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt\n');
 
-   await flattenDirectory(sourceDir, targetDir, true, false, [], false, false); // respectGitignore = false
+   await flattenDirectory(sourceDir, targetDir, true, false, [], false, true); // respectGitignore = false
 
    const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual([
@@ -162,7 +162,7 @@ test('merges files into a single md file', async () => {
   await writeFile(join(sourceDir, 'subdir', 'file2.js'), 'content2');
 
   const mdTarget = join(tempDir, 'output.md');
-  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, true); // copy, mergeMd
+  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false); // copy, mergeMd
 
   const mdContent = await readFile(mdTarget, 'utf8');
   expect(mdContent).toContain('# file1.txt\n\n```txt\ncontent1\n```');
@@ -178,7 +178,7 @@ test('merges files into md with move', async () => {
   await writeFile(join(sourceDir, 'subdir', 'file2.js'), 'content2');
 
   const mdTarget = join(tempDir, 'output.md');
-  await flattenDirectory(sourceDir, mdTarget, true, false, [], true, true); // move, mergeMd
+  await flattenDirectory(sourceDir, mdTarget, true, false, [], true, false); // move, mergeMd
 
   const mdContent = await readFile(mdTarget, 'utf8');
   expect(mdContent).toContain('# file1.txt\n\n```txt\ncontent1\n```');
@@ -194,7 +194,7 @@ test('handles md target conflict without overwrite', async () => {
   const mdTarget = join(tempDir, 'output.md');
   await writeFile(mdTarget, 'existing');
 
-  await expect(flattenDirectory(sourceDir, mdTarget, false, false, [], true, true))
+  await expect(flattenDirectory(sourceDir, mdTarget, false, false, [], true, false))
     .rejects.toThrow(/already exists/);
 });
 
@@ -203,7 +203,7 @@ test('overwrites md target with overwrite', async () => {
   const mdTarget = join(tempDir, 'output.md');
   await writeFile(mdTarget, 'existing');
 
-  await flattenDirectory(sourceDir, mdTarget, false, true, [], true, true); // overwrite
+  await flattenDirectory(sourceDir, mdTarget, false, true, [], true, false); // overwrite
 
   const mdContent = await readFile(mdTarget, 'utf8');
   expect(mdContent).toContain('new content');
@@ -216,7 +216,7 @@ test('ignores files when merging to md', async () => {
   await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt');
 
   const mdTarget = join(tempDir, 'output.md');
-  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, true);
+  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false);
 
   const mdContent = await readFile(mdTarget, 'utf8');
   expect(mdContent).toContain('# file1.txt');
@@ -228,7 +228,7 @@ test('uses quadruple backticks for markdown files in mergeMd', async () => {
   await writeFile(join(sourceDir, 'subdir', 'file.txt'), 'text content');
 
   const mdTarget = join(tempDir, 'output.md');
-  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, true); // copy, mergeMd
+  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false); // copy, mergeMd
 
   const mdContent = await readFile(mdTarget, 'utf8');
   expect(mdContent).toContain('# file.md\n\n````md\n# Markdown content\n```code\nblock\n```\n````');
