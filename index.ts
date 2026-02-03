@@ -5,6 +5,7 @@ import { join, relative, sep, resolve } from 'node:path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { globby } from 'globby';
+import pkg from './package.json' assert { type: 'json' };
 
 function escapePathComponent(component: string): string {
   return component.replace(/_/g, '__');
@@ -142,7 +143,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     })
     .help('h')
     .alias('h', 'help')
-    .version('1.2.0')
+    .version(pkg.version ?? '0.0.0')
     .alias('v', 'version')
     .parse();
 }
