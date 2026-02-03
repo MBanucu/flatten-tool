@@ -137,3 +137,21 @@ test('escapes underscores in path components', async () => {
   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file__1.txt', 'sub__dir_file__2.txt']);
 });
+
+test('does not ignore files from .gitignore when respectGitignore=false', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
+  await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
+  await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt\n');
+
+  await flattenDirectory(sourceDir, targetDir, true, false, [], false); // respectGitignore = false
+
+  const targetFiles = await readdir(targetDir);
+  expect(targetFiles.sort()).toEqual([
+    '.gitignore',
+    'file1.txt',
+    'ignore.txt',
+    'subdir_file2.txt'
+  ]);
+});

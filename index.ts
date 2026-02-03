@@ -31,7 +31,8 @@ export async function flattenDirectory(
   target: string,
   move: boolean = false,
   overwrite: boolean = false,
-  ignorePatterns: string[] = []
+  ignorePatterns: string[] = [],
+  respectGitignore: boolean = true
 ): Promise<void> {
   const absSource = resolve(source);
   const absTarget = resolve(target);
@@ -46,10 +47,10 @@ export async function flattenDirectory(
   // Prepare negative patterns for additional ignores (e.g., '!*.log')
   const negativeIgnores = ignorePatterns.map(pattern => `!${pattern}`);
 
-  // Get all non-ignored files (respects .gitignore in the tree)
+  // Get all non-ignored files (respects .gitignore in the tree if enabled)
   const files = await globby(['**', ...negativeIgnores], {
     cwd: absSource,
-    gitignore: true,
+    gitignore: respectGitignore,
     absolute: true,
     dot: true, // Include dotfiles unless ignored
     onlyFiles: true, // Only files, not dirs
@@ -114,18 +115,19 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           type: 'boolean',
           default: false,
         })
-        .option('ignore', {
-          alias: 'i',
-          describe: 'Glob patterns to ignore (repeat --ignore for multiple, e.g., --ignore "*.log" --ignore "temp/*")',
-          type: 'array',
-          default: [],
-        });
+        .option('gitignore', {
+          alias: 'g',
+          describe: 'Respect .gitignore files (default: true). Use --no-gitignore to include everything',
+          type: 'boolean',
+          default: true,
+        })
     }, async (argv) => {
       const source: string = argv.source as string;
       const target: string = argv.target as string;
       const move: boolean = argv.move as boolean;
       const overwrite: boolean = argv.overwrite as boolean;
       const ignorePatterns: string[] = argv.ignore as string[];
+      const respectGitignore: boolean = argv.gitignore as boolean;
 
       try {
         await stat(source);
@@ -135,7 +137,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       }
 
       const action = move ? 'moved' : 'copied';
-      await flattenDirectory(source, target, move, overwrite, ignorePatterns);
+      await flattenDirectory(source, target, move, overwrite, ignorePatterns, respectGitignore);
       console.log(`Directory flattened successfully (${action}) into ${target}.`);
     })
     .help('h')
