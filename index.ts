@@ -142,7 +142,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     })
     .help('h')
     .alias('h', 'help')
-    .version('1.1.0')
+    .version('1.2.0')
     .alias('v', 'version')
     .parse();
 }
