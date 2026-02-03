@@ -29,9 +29,13 @@
           buildInputs = [ pkgs.makeWrapper ];
           installPhase = ''
             mkdir -p $out/bin
-            cp index.ts $out/
+
+            # Copy everything into a subdirectory to preserve relative paths
+            mkdir -p $out/lib/flatten-tool
+            cp -r ./* ./.??* $out/lib/flatten-tool/   # includes hidden files like .env if any
+
             makeWrapper ${pkgs.bun}/bin/bun $out/bin/flatten-tool \
-              --add-flags $out/index.ts
+              --add-flags "$out/lib/flatten-tool/index.ts"
           '';
         };
         packages.default = self.packages.${system}.flatten-tool;
