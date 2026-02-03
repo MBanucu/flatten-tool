@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
-import { copyFile, rename, rm, stat, mkdir, readdir, rmdir } from 'node:fs/promises';
-import { join, relative, sep, resolve } from 'node:path';
+import { copyFile, rename, rm, stat, mkdir, readdir, rmdir, readFile, writeFile } from 'node:fs/promises';
+import { join, relative, sep, resolve, extname } from 'node:path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { globby } from 'globby';
@@ -33,7 +33,8 @@ export async function flattenDirectory(
   move: boolean = false,
   overwrite: boolean = false,
   ignorePatterns: string[] = [],
-  respectGitignore: boolean = true
+  respectGitignore: boolean = true,
+  mergeMd: boolean = false
 ): Promise<void> {
   const absSource = resolve(source);
   const absTarget = resolve(target);
@@ -43,49 +44,75 @@ export async function flattenDirectory(
     return;
   }
 
-  await mkdir(absTarget, { recursive: true });
-
-  // Prepare negative patterns for additional ignores (e.g., '!*.log')
   const negativeIgnores = ignorePatterns.map(pattern => `!${pattern}`);
 
-  // Get all non-ignored files (respects .gitignore in the tree if enabled)
   const files = await globby(['**', ...negativeIgnores], {
     cwd: absSource,
     gitignore: respectGitignore,
     absolute: true,
-    dot: true, // Include dotfiles unless ignored
-    onlyFiles: true, // Only files, not dirs
-    ignore: ['.git'], // Always ignore .git directory
+    dot: true,
+    onlyFiles: true,
+    ignore: ['.git'],
   });
 
-  for (const srcPath of files) {
-    const relPath = relative(absSource, srcPath);
-    const components = relPath.split(sep);
-    const escapedComponents = components.map(escapePathComponent);
-    const newName = escapedComponents.join('_');
-    const tgtPath = join(absTarget, newName);
-
-    // Check for conflicts
+  if (mergeMd) {
+    // Check if target exists
     try {
-      await stat(tgtPath);
+      await stat(absTarget);
       if (!overwrite) {
-        throw new Error(`Target file "${tgtPath}" already exists. Use --overwrite to force.`);
+        throw new Error(`Target file "${absTarget}" already exists. Use --overwrite to force.`);
       }
-      console.warn(`Overwriting existing file: ${tgtPath}`);
+      console.warn(`Overwriting existing file: ${absTarget}`);
     } catch (err: any) {
       if (err.code !== 'ENOENT') throw err;
     }
 
-    if (move) {
-      await rename(srcPath, tgtPath);
-    } else {
-      await copyFile(srcPath, tgtPath);
+    let mdContent = '';
+    for (const srcPath of files) {
+      const relPath = relative(absSource, srcPath).replace(/\\/g, '/'); // Normalize to forward slashes
+      const content = await readFile(srcPath, 'utf8');
+      const ext = extname(srcPath).slice(1) || 'text';
+      mdContent += `# ${relPath}\n\n\`\`\`${ext}\n${content}\n\`\`\`\n\n`;
     }
-  }
 
-  if (move) {
-    // Clean up empty directories in source
-    await removeEmptyDirs(absSource, absSource);
+    await writeFile(absTarget, mdContent);
+
+    if (move) {
+      for (const srcPath of files) {
+        await rm(srcPath);
+      }
+      await removeEmptyDirs(absSource, absSource);
+    }
+  } else {
+    await mkdir(absTarget, { recursive: true });
+
+    for (const srcPath of files) {
+      const relPath = relative(absSource, srcPath);
+      const components = relPath.split(sep);
+      const escapedComponents = components.map(escapePathComponent);
+      const newName = escapedComponents.join('_');
+      const tgtPath = join(absTarget, newName);
+
+      try {
+        await stat(tgtPath);
+        if (!overwrite) {
+          throw new Error(`Target file "${tgtPath}" already exists. Use --overwrite to force.`);
+        }
+        console.warn(`Overwriting existing file: ${tgtPath}`);
+      } catch (err: any) {
+        if (err.code !== 'ENOENT') throw err;
+      }
+
+      if (move) {
+        await rename(srcPath, tgtPath);
+      } else {
+        await copyFile(srcPath, tgtPath);
+      }
+    }
+
+    if (move) {
+      await removeEmptyDirs(absSource, absSource);
+    }
   }
 }
 
@@ -100,7 +127,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           demandOption: true,
         })
         .positional('target', {
-          describe: 'Where to place the flattened files (default: current directory)',
+          describe: 'Where to place the flattened files or MD file (default: current directory or flattened.md for --merge-md)',
           type: 'string',
           default: process.cwd(),
         })
@@ -122,13 +149,19 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           type: 'boolean',
           default: true,
         })
+        .option('merge-md', {
+          describe: 'Merge file contents into a single Markdown file instead of flattening to individual files',
+          type: 'boolean',
+          default: false,
+        });
     }, async (argv) => {
-      const source: string = argv.source as string;
-      const target: string = argv.target as string;
+      let source: string = argv.source as string;
+      let target: string = argv.target as string;
       const move: boolean = argv.move as boolean;
       const overwrite: boolean = argv.overwrite as boolean;
-      const ignorePatterns: string[] = argv.ignore as string[];
+      const ignorePatterns: string[] = argv.ignore as string[] || [];
       const respectGitignore: boolean = argv.gitignore as boolean;
+      const mergeMd: boolean = argv.mergeMd as boolean;
 
       try {
         await stat(source);
@@ -137,8 +170,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         process.exit(1);
       }
 
+      if (mergeMd && target === process.cwd()) {
+        target = join(target, 'flattened.md');
+      }
+
       const action = move ? 'moved' : 'copied';
-      await flattenDirectory(source, target, move, overwrite, ignorePatterns, respectGitignore);
+      await flattenDirectory(source, target, move, overwrite, ignorePatterns, respectGitignore, mergeMd);
       console.log(`Directory flattened successfully (${action}) into ${target}.`);
     })
     .help('h')

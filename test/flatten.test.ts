@@ -1,5 +1,5 @@
 import { test, expect, beforeEach, afterEach } from 'bun:test';
-import { mkdtemp, rm, mkdir, writeFile, readdir, stat } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile, readdir, stat, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { flattenDirectory } from '../index.ts';
@@ -154,4 +154,72 @@ test('does not ignore files from .gitignore when respectGitignore=false', async 
     'ignore.txt',
     'subdir_file2.txt'
   ]);
+});
+
+test('merges files into a single md file', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'subdir', 'file2.js'), 'content2');
+
+  const mdTarget = join(tempDir, 'output.md');
+  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, true); // copy, mergeMd
+
+  const mdContent = await readFile(mdTarget, 'utf8');
+  expect(mdContent).toContain('# file1.txt\n\n```txt\ncontent1\n```');
+  expect(mdContent).toContain('# subdir/file2.js\n\n```js\ncontent2\n```');
+
+  // Source files still exist since copy
+  expect(await readdir(sourceDir)).toContain('file1.txt');
+});
+
+test('merges files into md with move', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'subdir', 'file2.js'), 'content2');
+
+  const mdTarget = join(tempDir, 'output.md');
+  await flattenDirectory(sourceDir, mdTarget, true, false, [], true, true); // move, mergeMd
+
+  const mdContent = await readFile(mdTarget, 'utf8');
+  expect(mdContent).toContain('# file1.txt\n\n```txt\ncontent1\n```');
+  expect(mdContent).toContain('# subdir/file2.js\n\n```js\ncontent2\n```');
+
+  // Source files deleted, subdir empty and removed
+  const sourceFiles = await readdir(sourceDir);
+  expect(sourceFiles).toEqual([]);
+});
+
+test('handles md target conflict without overwrite', async () => {
+  await writeFile(join(sourceDir, 'file.txt'), 'content');
+  const mdTarget = join(tempDir, 'output.md');
+  await writeFile(mdTarget, 'existing');
+
+  await expect(flattenDirectory(sourceDir, mdTarget, false, false, [], true, true))
+    .rejects.toThrow(/already exists/);
+});
+
+test('overwrites md target with overwrite', async () => {
+  await writeFile(join(sourceDir, 'file.txt'), 'new content');
+  const mdTarget = join(tempDir, 'output.md');
+  await writeFile(mdTarget, 'existing');
+
+  await flattenDirectory(sourceDir, mdTarget, false, true, [], true, true); // overwrite
+
+  const mdContent = await readFile(mdTarget, 'utf8');
+  expect(mdContent).toContain('new content');
+  expect(mdContent).not.toContain('existing');
+});
+
+test('ignores files when merging to md', async () => {
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
+  await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt');
+
+  const mdTarget = join(tempDir, 'output.md');
+  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, true);
+
+  const mdContent = await readFile(mdTarget, 'utf8');
+  expect(mdContent).toContain('# file1.txt');
+  expect(mdContent).not.toContain('# ignore.txt');
+  expect(mdContent).toContain('# .gitignore'); // .gitignore is included unless ignored
 });
