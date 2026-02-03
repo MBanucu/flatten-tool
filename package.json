@@ -1,9 +1,43 @@
 {
   "name": "flatten-tool",
   "version": "1.2.0",
+  "description": "CLI tool to flatten directory structures: merge files into a single Markdown file (default) or copy/move to a flat directory with escaped filenames. Respects .gitignore, supports move/overwrite, and more.",
   "module": "index.ts",
   "type": "module",
-  "private": true,
+  "bin": {
+    "flatten-tool": "index.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "keywords": [
+    "flatten",
+    "directory",
+    "cli",
+    "markdown",
+    "merge",
+    "filesystem",
+    "bun",
+    "gitignore"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MBanucu/flatten-tool.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MBanucu/flatten-tool/issues"
+  },
+  "homepage": "https://github.com/MBanucu/flatten-tool#readme",
+  "files": [
+    "index.ts",
+    "README.md",
+    "LICENSE"
+  ],
   "devDependencies": {
     "@types/bun": "latest",
     "@types/yargs": "^17.0.35"
