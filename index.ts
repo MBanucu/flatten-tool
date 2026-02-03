@@ -1,5 +1,6 @@
 import { copyFile, rename, rm, stat, mkdir, readdir, rmdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative, sep, resolve, extname } from 'node:path';
+import { createReadStream, createWriteStream } from 'node:fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { globby } from 'globby';
@@ -65,17 +66,40 @@ export async function flattenDirectory(
       if (err.code !== 'ENOENT') throw err;
     }
 
-    let mdContent = '';
+    const writeStream = createWriteStream(absTarget);
+
     for (const srcPath of files) {
-      const relPath = relative(absSource, srcPath).replace(/\\/g, '/'); // Normalize to forward slashes
-      const content = await readFile(srcPath, 'utf8');
+      const relPath = relative(absSource, srcPath).replace(/\\/g, '/');
       let ext = extname(srcPath).slice(1) || 'text';
       const isMd = ['md', 'markdown'].includes(ext.toLowerCase());
       const ticks = isMd ? '````' : '```';
-      mdContent += `# ${relPath}\n\n${ticks}${ext}\n${content}\n${ticks}\n\n`;
+
+      // Header + opening fence
+      writeStream.write(`# ${relPath}\n\n${ticks}${ext}\n`);
+
+      // Stream file content as UTF-8 text (matches previous readFile(..., 'utf8') behavior)
+      const readStream = createReadStream(srcPath, { encoding: 'utf8' });
+
+      await new Promise<void>((resolve, reject) => {
+        readStream.pipe(writeStream, { end: false });
+
+        readStream.on('end', () => {
+          // Closing fence + trailing newlines
+          writeStream.write(`\n${ticks}\n\n`);
+          resolve();
+        });
+
+        readStream.on('error', reject);
+        writeStream.on('error', reject);
+      });
     }
 
-    await writeFile(absTarget, mdContent);
+    // Finalise the output file
+    await new Promise<void>((resolve, reject) => {
+      writeStream.end();
+      writeStream.on('close', resolve);
+      writeStream.on('error', reject);
+    });
 
     if (move) {
       for (const srcPath of files) {
