@@ -24,6 +24,7 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 ### Building
 - No explicit build step required for development (Bun handles TypeScript directly)
 - For production binary: `bun build ./index.ts --compile --outfile flatten-tool`
+- For Nix package: `nix build` (copies source files and creates wrapper)
 - Type checking: No tsconfig.json configured; Bun handles TypeScript compilation
 
 ### Linting and Formatting
@@ -49,11 +50,12 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - **Package Manager**: Bun (use `bun.lock` for lockfile)
 
 ### File Structure
-- `index.ts`: Main CLI entry point
+- `index.ts`: Main CLI entry point with yargs CLI parsing and flattenDirectory function
 - `test/`: Test files with `.test.ts` extension
 - `AGENTS.md`: Coding guidelines for AI agents (this file)
 - `flake.nix`: Nix package definition
-- `bun-packages.nix`: Bun dependency expressions (generated)
+- `package.json`: Project metadata with Bun dependencies
+- `README.md`: Usage instructions and examples
 - `.gitignore`: Standard ignores including `node_modules`, `result`, etc.
 
 ### Imports and Dependencies
@@ -63,7 +65,7 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Prefer named imports over default imports
 - Use Bun's built-in modules (e.g., `node:fs/promises`)
 - Import JSON files with `assert { type: 'json' }` for configuration: `import pkg from './package.json' assert { type: 'json' };`
-- Key dependencies: `globby` for file globbing, `yargs` for CLI parsing
+- Key dependencies: `globby` for file globbing, `yargs` for CLI parsing, `ignore` for gitignore support
 
 ### Formatting
 - Use consistent indentation (2 spaces)
@@ -122,8 +124,9 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Aim for high coverage of critical paths
 - Use descriptive test names and expect statements for clarity
 - Mock external dependencies when necessary
-- When adding new tests, follow the pattern of creating temp directories in beforeEach/afterEach
+- When adding new tests, follow the pattern of creating temp directories in beforeEach/afterEach using `mkdtemp(join(tmpdir(), 'test-prefix-'))`
 - Test CLI behavior by running `bun run index.ts` with various arguments
+- Test error conditions with `expect(...).rejects.toThrow()`
 
 ### Security
 - Validate all user inputs
@@ -186,5 +189,7 @@ Update this file when:
 - Code style evolves
 - New team members join
 - Major refactors change patterns
+- Build system changes (e.g., Nix flake updates)
+- Dependencies are added/removed
 
 Last updated: 2026-02-03
