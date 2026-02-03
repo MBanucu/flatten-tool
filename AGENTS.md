@@ -4,13 +4,14 @@ This document provides essential information for AI coding agents (like opencode
 
 ## Repository Overview
 
-flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, and is designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, and optional file overwriting or gitignore disabling.
+flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, and is designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file.
 
 ## Build/Lint/Test Commands
 
 ### Prerequisites
 - Install dependencies: `bun install`
 - Ensure Bun is installed (version 1.3+ recommended)
+- TypeScript is a peer dependency (install globally or via Nix)
 
 ### Testing
 - Run all tests: `bun test`
@@ -23,12 +24,11 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 ### Building
 - No explicit build step required for development (Bun handles TypeScript directly)
 - For production binary: `bun build ./index.ts --compile --outfile flatten-tool`
-- Check TypeScript compilation: `bun run tsc --noEmit` (if TypeScript is configured)
+- Type checking: No tsconfig.json configured; skip or add one if needed
 
 ### Linting and Formatting
-- Format code: `bun run prettier --write .` (if Prettier is configured)
-- Lint code: `bun run eslint .` (if ESLint is configured)
-- Type checking: `bun run tsc` or `bun run tsc --noEmit`
+- No ESLint or Prettier configured in this repository
+- Format code manually following the guidelines below
 
 ### Nix Flake
 - Build Nix package: `nix build .`
@@ -37,7 +37,6 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 
 ### CI/CD
 - Run full CI locally: `bun test && nix build .`
-- Check for linting issues before commit
 
 ## Code Style Guidelines
 
@@ -60,25 +59,21 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Group imports: standard library, third-party, local
 - Avoid relative imports for non-local files
 - Prefer named imports over default imports
-- Use Bun's built-in modules when possible (e.g., `node:fs/promises`)
-- Import JSON files with `assert { type: 'json' }` for configuration (e.g., package.json)
-- Use globby for efficient file globbing with .gitignore support
+- Use Bun's built-in modules (e.g., `node:fs/promises`)
+- Import JSON files with `assert { type: 'json' }` for configuration
 
 ### Formatting
 - Use consistent indentation (2 spaces)
 - Line length: 80-100 characters
 - Trailing commas in objects/arrays
-- Single quotes for strings, double for JSX (if any)
+- Single quotes for strings
 - Semicolons: always
-- Use Prettier for auto-formatting if configured
 
 ### Types and TypeScript
-- Strict mode: enabled (`"strict": true` in tsconfig.json)
 - Use explicit types for function parameters and return values
 - Prefer interfaces over types for object shapes
 - Use union types for variants
 - Avoid `any`; use `unknown` if necessary
-- Generic types for reusable components
 - Type assertions only when necessary (prefer type guards)
 
 ### Naming Conventions
@@ -99,34 +94,27 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 
 ### Error Handling
 - Use try-catch for synchronous errors
-- Async functions should handle rejections (Bun handles uncaught rejections)
-- Throw custom Error subclasses for specific error types
-- Log errors to stderr with descriptive messages
-- Exit with appropriate codes (0 for success, 1 for errors)
+- Async functions handle rejections (Bun handles uncaught rejections)
+- Throw descriptive Error messages
 - Validate inputs early
+- Exit with appropriate codes (0 success, 1 error)
 
 ### Asynchronous Code
 - Use `async`/`await` over Promises when possible
 - Handle concurrent operations with `Promise.all`
 - Use `for await` for async iterators
-- Avoid callback hell; prefer async patterns
 
 ### CLI and User Interaction
 - Use yargs for CLI parsing
 - Provide helpful `--help` output
 - Support `--version` flag (dynamically read from package.json)
-- Support `--overwrite` for file conflicts, `--gitignore` to toggle .gitignore respect
 - Use stderr for errors, stdout for normal output
-- Exit codes: 0 success, 1 error
-- Progress indicators for long operations
+- Progress indicators for long operations if needed
 
 ### Testing
 - Use Bun's test framework
 - Test files: `*.test.ts` in `test/` directory
-- Describe blocks for test suites
-- It blocks for individual tests
 - Use `beforeEach`/`afterEach` for setup/teardown
-- Mock external dependencies when necessary
 - Test both success and error cases
 - Aim for high coverage of critical paths
 
@@ -134,41 +122,34 @@ flatten-tool is a CLI utility built with Bun and TypeScript that flattens direct
 - Validate all user inputs
 - Use safe path operations (avoid `..` in paths)
 - Sanitize file paths to prevent directory traversal
-- Handle symlinks appropriately
 - No execution of user-provided code
 
 ### Performance
 - Use streaming for large file operations
 - Batch I/O operations when possible
 - Avoid unnecessary allocations
-- Profile with Bun's built-in tools if needed
 
 ### Documentation
 - JSDoc comments for public APIs
 - Inline comments for complex logic
 - README.md for usage instructions
-- This AGENTS.md for development guidelines
 
 ### Git Workflow
 - Conventional commits: `feat:`, `fix:`, `chore:`, etc.
 - Branch naming: `feature/`, `bugfix/`, `refactor/`
 - Pull requests with descriptions
-- Squash merges for clean history
 
 ### Nix Integration
 - Keep flake.nix simple and declarative
 - Update flake.lock after input changes
-- Test builds with `nix build .`
 - Ensure reproducibility across systems
 
 ### Best Practices
 - Write self-documenting code
 - Keep functions small and focused
-- Use meaningful variable names
 - Avoid magic numbers/strings
 - Handle edge cases gracefully
 - Test-driven development for new features
-- Code review before merging
 
 ## IDE and AI Assistant Rules
 
@@ -185,7 +166,6 @@ No Cursor rules (.cursor/rules/ or .cursorrules) or Copilot instructions (.githu
 
 ### General AI Agent Guidelines
 - Always run tests before committing
-- Check for linting errors
 - Follow the existing code patterns
 - Ask for clarification if requirements are unclear
 - Maintain backwards compatibility
