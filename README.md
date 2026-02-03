@@ -1,37 +1,15 @@
 # flatten-tool
 
-A CLI utility built with Bun and TypeScript that flattens directory structures. It can either merge all file contents into a single Markdown file (default behavior) or flatten files into a directory with escaped path components in filenames.
+[![npm version](https://img.shields.io/npm/v/flatten-tool)](https://www.npmjs.com/package/flatten-tool)
 
-**Version:** 1.2.0
-
-## Features
-
-- **Markdown Merging (Default):** Merges all files into a single Markdown file with headers, code fences, and proper language highlighting. Uses streaming for memory-efficient handling of large directories/files.
-- **Directory Flattening:** Flattens files into a directory with escaped filenames to avoid conflicts.
-- **Gitignore Support:** Respects `.gitignore` files by default.
-- **Move or Copy:** Option to move files instead of copying.
-- **Overwrite Control:** Prevents accidental overwrites unless specified.
-- **Cross-Platform:** Works on Linux, macOS, and Windows.
+A CLI utility to flatten directory structures.
 
 ## Installation
 
-### Using Bun
+Requires [Bun](https://bun.sh) runtime (v1.1+).
 
 ```bash
-bun install
-```
-
-### Using Nix (Reproducible)
-
-```bash
-nix build .
-# Or run directly: nix run .
-```
-
-### Build for Production
-
-```bash
-bun build ./index.ts --compile --outfile flatten-tool
+npm install -g flatten-tool
 ```
 
 ## Usage
@@ -54,31 +32,31 @@ The `<source>` argument is optional and defaults to the current directory (`.`).
 Flatten current directory to `flattened.md`:
 
 ```bash
-bun run index.ts
+flatten-tool
 ```
 
 Flatten a specific directory to `flattened.md`:
 
 ```bash
-bun run index.ts /path/to/source
+flatten-tool /path/to/source
 ```
 
 Flatten current directory to a custom Markdown file:
 
 ```bash
-bun run index.ts output.md
+flatten-tool output.md
 ```
 
 Flatten a specific directory to a custom Markdown file:
 
 ```bash
-bun run index.ts /path/to/source output.md
+flatten-tool /path/to/source output.md
 ```
 
 Flatten to individual files in a directory:
 
 ```bash
-bun run index.ts --directory
+flatten-tool --directory
 ```
 
 This creates a `flattened/` directory with flattened files.
@@ -86,25 +64,25 @@ This creates a `flattened/` directory with flattened files.
 Flatten a specific directory to a custom output directory:
 
 ```bash
-bun run index.ts /path/to/source output-dir --directory
+flatten-tool /path/to/source output-dir --directory
 ```
 
 Move files instead of copying:
 
 ```bash
-bun run index.ts --move
+flatten-tool --move
 ```
 
 Overwrite existing files:
 
 ```bash
-bun run index.ts --overwrite
+flatten-tool --overwrite
 ```
 
 Combine options:
 
 ```bash
-bun run index.ts /path/to/source output.md --move --overwrite
+flatten-tool /path/to/source output.md --move --overwrite
 ```
 
 ## Testing

@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { copyFile, rename, rm, stat, mkdir, readdir, rmdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative, sep, resolve, extname } from 'node:path';
 import { createReadStream, createWriteStream } from 'node:fs';
