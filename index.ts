@@ -32,7 +32,7 @@ export async function flattenDirectory(
   overwrite: boolean = false,
   ignorePatterns: string[] = [],
   respectGitignore: boolean = true,
-  mergeMd: boolean = false
+  mergeMd: boolean = true
 ): Promise<void> {
   const absSource = resolve(source);
   const absTarget = resolve(target);
@@ -119,7 +119,7 @@ export async function flattenDirectory(
 // Main CLI logic
 if (import.meta.url === `file://${process.argv[1]}`) {
   yargs(hideBin(process.argv))
-    .command('$0 <source> [target]', 'Flatten a directory structure (default: copy)', (yargs) => {
+    .command('$0 <source> [target]', 'Flatten or merge a directory structure (default: merge to Markdown, copy)', (yargs) => {
       yargs
         .positional('source', {
           describe: 'The directory to flatten',
@@ -150,9 +150,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           default: true,
         })
         .option('merge-md', {
-          describe: 'Merge file contents into a single Markdown file instead of flattening to individual files',
+          describe: 'Merge file contents into a single Markdown file instead of flattening to individual files (default: true). Use --no-merge-md for individual files.',
           type: 'boolean',
-          default: false,
+          default: true,
         });
     }, async (argv) => {
       let source: string = argv.source as string;

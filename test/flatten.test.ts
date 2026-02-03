@@ -24,11 +24,11 @@ test('flattens a simple nested directory', async () => {
   // Create nested structure
   await mkdir(join(sourceDir, 'subdir'));
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
-  await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
+   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
 
-  await flattenDirectory(sourceDir, targetDir, true); // move
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move
 
-  // Check target has both files with path-based names
+   // Check target has both files with path-based names
   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file1.txt', 'subdir_file2.txt']);
 
@@ -48,22 +48,22 @@ test('flattens a simple nested directory', async () => {
 test('handles filename conflicts', async () => {
   await mkdir(join(sourceDir, 'subdir'));
   await writeFile(join(sourceDir, 'file.txt'), 'content1');
-  await writeFile(join(sourceDir, 'subdir', 'file.txt'), 'content2');
+   await writeFile(join(sourceDir, 'subdir', 'file.txt'), 'content2');
 
-  await flattenDirectory(sourceDir, targetDir, true); // move
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move
 
-  const targetFiles = await readdir(targetDir);
+   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file.txt', 'subdir_file.txt']);
 });
 
 test('copies files by default', async () => {
   await mkdir(join(sourceDir, 'subdir'));
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
-  await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
+   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
 
-  await flattenDirectory(sourceDir, targetDir); // copy
+   await flattenDirectory(sourceDir, targetDir, false, false, [], true, false); // copy
 
-  // Check target has copies
+   // Check target has copies
   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file1.txt', 'subdir_file2.txt']);
 
@@ -79,11 +79,11 @@ test('ignores files matching patterns', async () => {
   await mkdir(join(sourceDir, 'subdir'));
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
-  await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
+   await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
 
-  await flattenDirectory(sourceDir, targetDir, true, false, ['ignore.txt']); // move, ignore specific file
+   await flattenDirectory(sourceDir, targetDir, true, false, ['ignore.txt'], true, false); // move, ignore specific file
 
-  const targetFiles = await readdir(targetDir);
+   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file1.txt', 'subdir_file2.txt']); // ignore.txt ignored
 
   // Check source still has the ignored file, subdir removed since empty
@@ -96,11 +96,11 @@ test('ignores files from .gitignore by default', async () => {
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
   await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
-  await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt\n# comment\n\n*.log\n');
+   await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt\n# comment\n\n*.log\n');
 
-  await flattenDirectory(sourceDir, targetDir, true); // move, should ignore from .gitignore
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move, should ignore from .gitignore
 
-  const targetFiles = await readdir(targetDir);
+   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['.gitignore', 'file1.txt', 'subdir_file2.txt']); // ignore.txt ignored, .gitignore included
 
   // Check source still has the ignored file, subdir removed since empty
@@ -113,11 +113,11 @@ test('ignores files from .gitignore in subdirectories', async () => {
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
   await writeFile(join(sourceDir, 'subdir', 'ignore_in_sub.txt'), 'ignored in sub');
-  await writeFile(join(sourceDir, 'subdir', '.gitignore'), 'ignore_in_sub.txt\n');
+   await writeFile(join(sourceDir, 'subdir', '.gitignore'), 'ignore_in_sub.txt\n');
 
-  await flattenDirectory(sourceDir, targetDir, true); // move
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move
 
-  const targetFiles = await readdir(targetDir);
+   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file1.txt', 'subdir_.gitignore', 'subdir_file2.txt']); // ignore_in_sub.txt ignored
 
   // Check source subdir still has the ignored file
@@ -130,11 +130,11 @@ test('ignores files from .gitignore in subdirectories', async () => {
 test('escapes underscores in path components', async () => {
   await mkdir(join(sourceDir, 'sub_dir'));
   await writeFile(join(sourceDir, 'file_1.txt'), 'content1');
-  await writeFile(join(sourceDir, 'sub_dir', 'file_2.txt'), 'content2');
+   await writeFile(join(sourceDir, 'sub_dir', 'file_2.txt'), 'content2');
 
-  await flattenDirectory(sourceDir, targetDir, true); // move
+   await flattenDirectory(sourceDir, targetDir, true, false, [], true, false); // move
 
-  const targetFiles = await readdir(targetDir);
+   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file__1.txt', 'sub__dir_file__2.txt']);
 });
 
@@ -143,11 +143,11 @@ test('does not ignore files from .gitignore when respectGitignore=false', async 
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
   await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
   await writeFile(join(sourceDir, 'ignore.txt'), 'ignored');
-  await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt\n');
+   await writeFile(join(sourceDir, '.gitignore'), 'ignore.txt\n');
 
-  await flattenDirectory(sourceDir, targetDir, true, false, [], false); // respectGitignore = false
+   await flattenDirectory(sourceDir, targetDir, true, false, [], false, false); // respectGitignore = false
 
-  const targetFiles = await readdir(targetDir);
+   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual([
     '.gitignore',
     'file1.txt',
