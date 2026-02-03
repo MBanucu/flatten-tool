@@ -31,12 +31,12 @@
         packageName =
           name:
           let
-            parts = builtins.split "@" name;
+            parts = builtins.filter builtins.isString (builtins.split "@" name);
           in
-          if builtins.length parts >= 3 && builtins.elemAt parts 0 == "" then
+          if builtins.length parts >= 3 && builtins.head parts == "" then
             "@" + builtins.elemAt parts 1 + "/" + builtins.elemAt parts 2
           else
-            builtins.elemAt parts 0;
+            builtins.head parts;
 
         # Create node_modules as a separate derivation by unpacking packages
         nodeModules = pkgs.runCommand "flatten-tool-node-modules" { } ''
