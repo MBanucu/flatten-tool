@@ -244,3 +244,19 @@ test('includes gif files when flattening to directory', async () => {
   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['file1.txt', 'image.gif']);
 });
+
+test('excludes gif files in subdirs by default when merging to md', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'subdir', 'file2.js'), 'content2');
+  await writeFile(join(sourceDir, 'subdir', 'image.gif'), 'fake gif content');
+
+  const mdTarget = join(tempDir, 'output.md');
+  await flattenDirectory(sourceDir, mdTarget, false, false, [], true, false); // merge to md
+
+  const mdContent = await readFile(mdTarget, 'utf8');
+  expect(mdContent).toContain('# file1.txt');
+  expect(mdContent).toContain('# subdir/file2.js');
+  expect(mdContent).not.toContain('# subdir/image.gif');
+  expect(mdContent).not.toContain('fake gif content');
+});

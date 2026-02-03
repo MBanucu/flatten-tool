@@ -113,6 +113,9 @@ This project uses Bun for runtime, TypeScript for type safety, and follows the g
 
 ## Changelog
 
+### v1.3.1
+- Fixed GIF exclusion pattern to work recursively in subdirectories.
+
 ### v1.3.0
 - Excluded GIF files by default when merging to Markdown to prevent binary content corruption.
 
