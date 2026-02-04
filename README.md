@@ -16,6 +16,15 @@ Requires [Bun](https://bun.sh) runtime (v1.1+).
 npm install -g flatten-tool
 ```
 
+### Run without installation
+
+You can run flatten-tool directly without installing:
+
+```bash
+npx flatten-tool [args]
+bunx flatten-tool [args]
+```
+
 ### For Development
 
 Clone the repository and install dependencies:
@@ -130,6 +139,9 @@ bun test -t "flattens a simple nested directory"
 This project uses Bun for runtime, TypeScript for type safety, and follows the guidelines in `AGENTS.md` for coding standards.
 
 ## Changelog
+
+### v1.6.1
+- Added instructions for running flatten-tool directly with npx and bunx.
 
 ### v1.6.0
 - Perfect GitHub compatibility: anchors now exactly match GitHub Flavored Markdown auto-generation using github-slugger.

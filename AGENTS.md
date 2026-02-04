@@ -6,7 +6,7 @@ This document provides essential information for AI coding agents (like opencode
 
 flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with a clickable project file tree at the top and special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead. Anchors are fully compatible with GitHub Flavored Markdown through precomputed slug generation.
 
-Version: 1.6.0
+Version: 1.6.1
 
 ## Build/Lint/Test Commands
 
