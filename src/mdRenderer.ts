@@ -1,5 +1,7 @@
+import type { TreeNode } from './treeBuilder.ts';
+
 export function renderMarkdownTree(
-  node: any,
+  node: TreeNode,
   depth: number = 0,
   prefix: string = '',
   anchorMap: Map<string, string>,
@@ -15,7 +17,7 @@ export function renderMarkdownTree(
 
   const entryIndent = '  '.repeat(depth);
 
-  const entries: [string, any][] = Object.entries(node);
+  const entries: [string, TreeNode | string][] = Object.entries(node);
 
   entries.sort(([a], [b]) => {
     const aDir = a.endsWith('/');
@@ -34,7 +36,7 @@ export function renderMarkdownTree(
     result += `${entryIndent}- [${display}](#${anchor})\n`;
 
     if (isDir) {
-      result += renderMarkdownTree(value, depth + 1, pathHere, anchorMap, prefix);
+      result += renderMarkdownTree(value as TreeNode, depth + 1, pathHere, anchorMap, prefix);
     }
   }
 

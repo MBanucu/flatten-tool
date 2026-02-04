@@ -22,14 +22,20 @@ export async function flattenToDirectory(
     const newName = escapedComponents.join('_');
     const tgtPath = join(absTarget, newName);
 
+    let targetExists = false;
     try {
       await stat(tgtPath);
-      if (!options.overwrite) {
-        throw new Error(`Target file "${tgtPath}" already exists. Use --overwrite to force.`);
-      }
+      targetExists = true;
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'code' in err && err.code !== 'ENOENT') throw err;
+    }
+
+    if (targetExists && !options.overwrite) {
+      throw new Error(`Target file "${tgtPath}" already exists. Use --overwrite to force.`);
+    }
+
+    if (targetExists) {
       console.warn(`Overwriting existing file: ${tgtPath}`);
-    } catch (err: any) {
-      if (err.code !== 'ENOENT') throw err;
     }
 
     if (options.move) {

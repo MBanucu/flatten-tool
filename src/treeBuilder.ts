@@ -1,5 +1,7 @@
-export function buildTreeObject(relPaths: string[]): any {
-  const tree: any = {};
+export type TreeNode = { [key: string]: TreeNode | string };
+
+export function buildTreeObject(relPaths: string[]): TreeNode {
+  const tree: TreeNode = {};
   for (const path of relPaths) {
     const parts = path.split('/');
     let node = tree;
@@ -12,7 +14,7 @@ export function buildTreeObject(relPaths: string[]): any {
         node[key] = isDir ? {} : currentParts.join('/');
       }
       if (isDir) {
-        node = node[key];
+        node = node[key] as TreeNode;
       }
     }
   }

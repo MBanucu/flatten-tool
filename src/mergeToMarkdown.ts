@@ -4,7 +4,7 @@ import { extname, relative } from 'node:path';
 import { finished, pipeline } from 'node:stream/promises';
 import GithubSlugger from 'github-slugger';
 import { renderMarkdownTree } from './mdRenderer.ts';
-import { buildTreeObject } from './treeBuilder.ts';
+import { buildTreeObject, type TreeNode } from './treeBuilder.ts';
 
 interface MergeOptions {
   overwrite: boolean;
@@ -16,14 +16,20 @@ export async function mergeToMarkdown(
   absTarget: string,
   options: MergeOptions
 ): Promise<void> {
+  let targetExists = false;
   try {
     await stat(absTarget);
-    if (!options.overwrite) {
-      throw new Error(`Target file "${absTarget}" already exists. Use --overwrite to force.`);
-    }
+    targetExists = true;
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'code' in err && err.code !== 'ENOENT') throw err;
+  }
+
+  if (targetExists && !options.overwrite) {
+    throw new Error(`Target file "${absTarget}" already exists. Use --overwrite to force.`);
+  }
+
+  if (targetExists) {
     console.warn(`Overwriting existing file: ${absTarget}`);
-  } catch (err: any) {
-    if (err.code !== 'ENOENT') throw err;
   }
 
   const fileEntries = files.map((srcPath) => ({
@@ -46,14 +52,14 @@ export async function mergeToMarkdown(
 
   const sections: Section[] = [];
 
-  function collectSections(node: any, currentPath: string): void {
-    const dirs: { name: string; child: any }[] = [];
+  function collectSections(node: TreeNode, currentPath: string): void {
+    const dirs: { name: string; child: TreeNode }[] = [];
     const files: { relPath: string }[] = [];
 
-    for (const [key, value] of Object.entries(node) as [string, any][]) {
+    for (const [key, value] of Object.entries(node) as [string, TreeNode | string][]) {
       if (key.endsWith('/')) {
         const name = key.slice(0, -1);
-        dirs.push({ name, child: value });
+        dirs.push({ name, child: value as TreeNode });
       } else {
         files.push({ relPath: value as string });
       }
@@ -88,29 +94,32 @@ export async function mergeToMarkdown(
   const writeStream = createWriteStream(absTarget);
   writeStream.setMaxListeners(0);
 
-  let treeMarkdown = `<a id="${anchorMap.get('')!}"></a>\n# Project File Tree\n\n`;
+  const rootAnchor = anchorMap.get('');
+  if (rootAnchor === undefined) throw new Error('Missing root anchor');
+  let treeMarkdown = `<a id="${rootAnchor}"></a>\n# Project File Tree\n\n`;
   treeMarkdown += renderMarkdownTree(treeObj, 0, '', anchorMap, null);
   treeMarkdown += '\n\n';
 
   writeStream.write(treeMarkdown);
 
   async function writeContentRecursive(
-    node: any,
+    node: TreeNode,
     currentPath: string,
     writeStream: import('node:fs').WriteStream,
     pathMap: Map<string, string>,
     anchorMap: Map<string, string>
   ): Promise<void> {
-    const dirs: { name: string; child: any }[] = [];
+    const dirs: { name: string; child: TreeNode }[] = [];
     const files: { name: string; relPath: string; srcPath: string }[] = [];
 
-    for (const [key, value] of Object.entries(node) as [string, any][]) {
+    for (const [key, value] of Object.entries(node) as [string, TreeNode | string][]) {
       if (key.endsWith('/')) {
         const name = key.slice(0, -1);
-        dirs.push({ name, child: value });
+        dirs.push({ name, child: value as TreeNode });
       } else {
         const relPath = value as string;
-        const srcPath = pathMap.get(relPath)!;
+        const srcPath = pathMap.get(relPath);
+        if (srcPath === undefined) throw new Error(`Missing source path for ${relPath}`);
         const name = key;
         files.push({ name, relPath, srcPath });
       }
@@ -125,7 +134,8 @@ export async function mergeToMarkdown(
     }
 
     if (currentPath) {
-      const anchor = anchorMap.get(currentPath)!;
+      const anchor = anchorMap.get(currentPath);
+      if (anchor === undefined) throw new Error(`Missing anchor for ${currentPath}`);
       writeStream.write(`<a id="${anchor}"></a>\n# ${currentPath}\n\n`);
       writeStream.write('File Tree\n\n');
 
@@ -138,7 +148,8 @@ export async function mergeToMarkdown(
     }
 
     for (const file of files) {
-      const anchor = anchorMap.get(file.relPath)!;
+      const anchor = anchorMap.get(file.relPath);
+      if (anchor === undefined) throw new Error(`Missing anchor for ${file.relPath}`);
       writeStream.write(`<a id="${anchor}"></a>\n# ${file.relPath}\n\n`);
 
       const ext = extname(file.srcPath).slice(1) || 'text';
