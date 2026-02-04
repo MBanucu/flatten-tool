@@ -178,7 +178,7 @@ export async function flattenDirectory(
       const indent = '  '.repeat(depth);
 
       // Add .. if we have a parent
-      if (parentPath !== null) {
+      if (parentPath !== null && depth === 0) {
         const parentAnchor = anchorMap.get(parentPath) ?? '';
         result += `${indent}- [..](#${parentAnchor})\n`;
       }
