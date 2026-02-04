@@ -6,7 +6,7 @@ This document provides essential information for AI coding agents working on the
 
 flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures. It merges file contents into a single Markdown file with a clickable project file tree, or flattens to individual files. Supports ignore patterns, GitHub-compatible anchors.
 
-Version: 1.6.3
+Version: 1.7.0
 
 ## Build/Lint/Test Commands
 
@@ -35,101 +35,184 @@ Version: 1.6.3
 
 ## Code Style Guidelines
 
-### Language
-- TypeScript ES2022, Bun runtime, ES modules, Bun package manager
+### Language and Environment
+- TypeScript ES2022 with strict mode enabled
+- Bun runtime for execution and package management
+- ES modules (import/export)
+- Target Node.js compatible APIs via Bun
 
 ### File Structure
-- `index.ts`: CLI entry, flattenDirectory, helpers
-- `test/*.test.ts`: Bun test framework
-- `package.json`, `README.md`, etc.
+- `index.ts`: Main CLI entry point, `flattenDirectory` function, and helper utilities
+- `test/*.test.ts`: Test files using Bun's test framework
+- `package.json`: Dependencies and scripts
+- `README.md`: User documentation
+- `AGENTS.md`: This coding guidelines file
+- No separate build output; Bun handles TypeScript compilation on-the-fly
 
 ### Imports
-- ES6 imports: `import { foo } from 'bar'`
-- Group: node:*, third-party, local
-- Named imports preferred
-- JSON: `import pkg from './package.json' assert { type: 'json' };`
+- Use ES6 import syntax: `import { foo } from 'bar'`
+- Group imports in this order:
+  1. Node.js built-ins (prefixed with `node:`)
+  2. Third-party dependencies
+  3. Local project files
+- Prefer named imports over default imports when possible
+- For JSON imports: `import pkg from './package.json' assert { type: 'json' };`
+- Avoid relative imports with `../`; use absolute paths from project root if needed
+
+Example:
+```ts
+import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import yargs from 'yargs';
+import GithubSlugger from 'github-slugger';
+import { buildTreeObject } from './helpers.ts';
+```
 
 ### Formatting
-- 2 spaces indentation
-- 80-100 char lines
-- Trailing commas
-- Single quotes
-- Semicolons always
+- 2 spaces for indentation (no tabs)
+- Line length: 80-100 characters
+- Trailing commas in multi-line structures
+- Single quotes for strings
+- Semicolons always required
 - No trailing whitespace
-- Blank lines between blocks
+- Blank lines between logical blocks of code
+- Consistent spacing around operators and keywords
 
 ### Types
-- Explicit types for params/returns
-- Interfaces over types
-- Avoid `any`
-- JSDoc for public APIs
+- Explicit types for all function parameters and return values
+- Use interfaces for object shapes instead of type aliases
+- Avoid `any` type; use `unknown` if truly necessary
+- JSDoc comments for public APIs with `@param` and `@returns`
+- Leverage TypeScript's type inference where possible
+- Use union types for multiple possible values
 
-### Naming
-- camelCase: variables/functions
-- PascalCase: classes/interfaces
-- UPPER_SNAKE: constants
-- Booleans: `is`, `has`, `can`
+Example:
+```ts
+interface FileEntry {
+  srcPath: string;
+  relPath: string;
+}
+
+function processFiles(files: FileEntry[]): string[] {
+  return files.map(entry => entry.relPath);
+}
+```
+
+### Naming Conventions
+- camelCase: variables, functions, methods
+- PascalCase: classes, interfaces, type names
+- UPPER_SNAKE_CASE: constants and enum values
+- Boolean prefixes: `is`, `has`, `can`, `should`
+- File names: kebab-case for non-TypeScript files, camelCase for TypeScript files
+- Avoid abbreviations unless widely understood
 
 ### Functions
-- Pure when possible
-- Async for I/O
-- Arrow for callbacks
-- Destructuring
-- Default params
-- Early returns
-- <50 lines
+- Prefer pure functions when possible
+- Use async/await for I/O operations
+- Arrow functions for callbacks and short lambdas
+- Destructuring parameters for clarity
+- Default parameters for optional values
+- Early returns to reduce nesting
+- Keep functions under 50 lines; break into smaller functions if needed
+- Single responsibility principle
+
+Example:
+```ts
+async function readAndProcessFile(filePath: string): Promise<string> {
+  const content = await readFile(filePath, 'utf8');
+  return content.trim().toUpperCase();
+}
+```
 
 ### Error Handling
-- try-catch for sync
-- Descriptive errors
-- Validate inputs
-- Graceful FS errors
+- Use try-catch for synchronous operations
+- Descriptive error messages with context
+- Validate inputs at function entry points
+- Graceful handling of filesystem errors (ENOENT, EACCES, etc.)
+- Avoid throwing generic Error; use specific error types when appropriate
+- Log errors to stderr, not stdout
 
 ### Async Code
-- async/await preferred
-- Promise.all for concurrent
-- Streaming: `pipeline`, `finished`
+- async/await preferred over Promise chains
+- Use `Promise.all()` for concurrent operations
+- Streaming APIs: `pipeline`, `finished` from `node:stream/promises`
+- Handle backpressure in streams appropriately
 
-### CLI
-- yargs parsing
-- --help, --version
-- stderr for errors
+### CLI and User Interface
+- yargs for command-line argument parsing
+- Standard options: --help, --version
+- Error messages to stderr
+- Success messages to stdout
+- Consistent exit codes (0 for success, 1 for errors)
 
 ### Testing
-- Bun framework
-- beforeEach/afterEach for temp dirs
-- Descriptive names
-- Exact matches for assertions
-- Test CLI args
-- Error conditions
+- Bun's test framework (`bun:test`)
+- `beforeEach`/`afterEach` for temporary directory setup/cleanup
+- Descriptive test names describing the behavior
+- Exact assertions with `toEqual()` rather than loose equality
+- Test both success and error paths
+- Mock external dependencies when necessary
+- Test CLI arguments via direct function calls
+
+Example test structure:
+```ts
+test('flattens directory with nested files', async () => {
+  // Setup
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+
+  // Execute
+  await flattenDirectory(sourceDir, targetFile, false, true, [], true, false);
+
+  // Assert
+  const content = await readFile(targetFile, 'utf8');
+  expect(content).toContain('# file1.txt');
+});
+```
 
 ### Security
-- Validate inputs
-- Safe paths
-- No user code execution
+- Validate all user inputs (paths, arguments)
+- Use safe path operations (resolve, join)
+- No execution of user-provided code
+- Sanitize file paths to prevent directory traversal
+- Respect .gitignore to avoid processing sensitive files
 
 ### Performance
-- Streaming for large files
-- Batch I/O
-- Built-in APIs
+- Use streaming for large file operations
+- Batch I/O operations where possible
+- Leverage built-in Node.js APIs over external libraries
+- Avoid synchronous filesystem operations
+- Consider memory usage for large directories
+
+### Code Comments
+- IMPORTANT: DO NOT ADD ***ANY*** COMMENTS unless explicitly requested by the user
+- Self-documenting code preferred
+- JSDoc only for complex public APIs
+- Avoid inline comments; use descriptive variable/function names
 
 ### Documentation
-- JSDoc
-- Concise comments
+- JSDoc for exported functions
+- Keep comments concise and focused on "why" not "what"
+- Update README.md for user-facing changes
+- Document breaking changes clearly
 
-### Git
-- Conventional commits
-- Feature branches
+### Git Workflow
+- Conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, etc.
+- Feature branches for new work
+- Squash commits when merging to main
+- Descriptive commit messages explaining the change
 
 ### Nix
-- Simple flake
-- Update lock
+- Simple flake.nix for reproducible builds
+- Update flake.lock after dependency changes
+- Use for CI/CD if available
 
-### Best Practices
-- Self-documenting code
-- Small functions
-- TDD
-- Security first
+### Dependencies
+- Keep dependencies minimal
+- Use latest stable versions
+- Audit dependencies regularly
+- Prefer small, focused libraries
+- Pin versions in package.json for reproducibility
 
 ## IDE and AI Rules
 
@@ -137,10 +220,12 @@ No Cursor or Copilot rules defined. Follow this AGENTS.md.
 
 ## Agent Notes
 
-- Run tests before commit
-- Follow patterns
-- Maintain compatibility
-- Update AGENTS.md on changes
+- Always run tests before committing changes
+- Follow existing code patterns and conventions
+- Maintain backward compatibility unless explicitly changing API
+- Update AGENTS.md when coding guidelines evolve
+- When in doubt, match the style of surrounding code
+- Prefer small, incremental changes over large rewrites
 
 Last updated: 2026-02-04</content>
 <parameter name="filePath">/home/michi/dev/flatten-tool/AGENTS.md

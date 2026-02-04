@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/flatten-tool)](https://www.npmjs.com/package/flatten-tool)
 
-A CLI utility to flatten directory structures, with perfect GitHub Flavored Markdown compatibility.
+A CLI utility to flatten directory structures, with perfect GitHub Flavored Markdown compatibility including explicit HTML anchors for maximum portability.
 
 [![Video thumbnail](https://i.ytimg.com/vi/LCbSoK0Mkjk/maxresdefault.jpg)](https://youtu.be/LCbSoK0Mkjk)  
 *Watch the YouTube video for an example of why you might need to flatten project files into a single document for AI discussions and code reviews.*
@@ -142,6 +142,9 @@ bun test -t "flattens a simple nested directory"
 This project uses Bun for runtime, TypeScript for type safety, and follows the guidelines in `AGENTS.md` for coding standards.
 
 ## Changelog
+
+### v1.7.0
+- Added explicit HTML anchors (`<a id="..."></a>`) before all headings for guaranteed compatibility across platforms that don't auto-generate heading IDs, maximum control over anchor names, and stable links.
 
 ### v1.6.3
 - Enhanced safety: Automatically exclude common binary file extensions (PNG, JPEG, PDF, archives, executables, etc.) when merging to Markdown to prevent corruption.

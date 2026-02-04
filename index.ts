@@ -220,7 +220,7 @@ export async function flattenDirectory(
     }
 
     // Render global tree with correct anchors
-    let treeMarkdown = "# Project File Tree\n\n";
+    let treeMarkdown = `<a id="${anchorMap.get('')!}"></a>\n# Project File Tree\n\n`;
     treeMarkdown += renderMarkdownTree(treeObj, 0, '', anchorMap, null);
     treeMarkdown += "\n\n";
 
@@ -259,7 +259,8 @@ export async function flattenDirectory(
 
       // Directory section (only for non-root) — no trailing /
       if (currentPath) {
-        writeStream.write(`# ${currentPath}\n\n`);
+        const anchor = anchorMap.get(currentPath)!;
+        writeStream.write(`<a id="${anchor}"></a>\n# ${currentPath}\n\n`);
         writeStream.write(`File Tree\n\n`);
 
         const parentPath = currentPath.includes('/')
@@ -271,7 +272,8 @@ export async function flattenDirectory(
       }
 
       for (const file of files) {
-        writeStream.write(`# ${file.relPath}\n\n`);
+        const anchor = anchorMap.get(file.relPath)!;
+        writeStream.write(`<a id="${anchor}"></a>\n# ${file.relPath}\n\n`);
 
         let ext = extname(file.srcPath).slice(1) || 'text';
         const lang = ext;
