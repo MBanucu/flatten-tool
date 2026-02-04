@@ -4,6 +4,9 @@
 
 A CLI utility to flatten directory structures, with perfect GitHub Flavored Markdown compatibility.
 
+[![Video thumbnail](https://i.ytimg.com/vi/LCbSoK0Mkjk/maxresdefault.jpg)](https://youtu.be/LCbSoK0Mkjk)  
+*Watch the YouTube video for an example of why you might need to flatten project files into a single document for AI discussions and code reviews.*
+
 [![asciicast](docs/demo.gif)](https://asciinema.org/a/ThswNC1vrdlK0wdD)
 
 ## Installation
@@ -139,6 +142,12 @@ bun test -t "flattens a simple nested directory"
 This project uses Bun for runtime, TypeScript for type safety, and follows the guidelines in `AGENTS.md` for coding standards.
 
 ## Changelog
+
+### v1.6.3
+- Enhanced safety: Automatically exclude common binary file extensions (PNG, JPEG, PDF, archives, executables, etc.) when merging to Markdown to prevent corruption.
+- Added `--ignore` CLI option: Allow additional glob patterns to ignore (e.g., `*.log`, `temp/**`).
+- Minor clean-ups: Improved variable naming and code consistency.
+- Added YouTube video link in README demonstrating use case for AI discussions.
 
 ### v1.6.2
 - Updated AGENTS.md with revised coding guidelines.

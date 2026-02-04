@@ -67,20 +67,28 @@ export async function flattenDirectory(
     return;
   }
 
-  const negativeIgnores = ignorePatterns.map(pattern => `!${pattern}`);
+  // Patterns explicitly ignored (in addition to .gitignore when enabled)
+  const extraIgnores = ignorePatterns.map(pattern => `!${pattern}`);
 
-  const ignoreFiles = ['.git'];
+  const defaultIgnores = ['.git'];
   if (!flattenToDirectory) {
-    ignoreFiles.push('**/*.gif');
+    // Common binary/media extensions that would corrupt UTF-8 text output
+    const binaryExts = [
+      'gif', 'png', 'jpg', 'jpeg', 'webp', 'svg', 'bmp', 'ico',
+      'pdf', 'zip', 'tar', 'gz', 'xz', '7z',
+      'mp3', 'mp4', 'webm', 'ogg', 'wav',
+      'exe', 'dll', 'so', 'dylib', 'bin'
+    ];
+    defaultIgnores.push(`**/*.{${binaryExts.join(',')}}`);
   }
 
-   const files = await globby(['**', ...negativeIgnores], {
+  const files = await globby(['**', ...extraIgnores], {
     cwd: absSource,
     gitignore: respectGitignore,
     absolute: true,
     dot: true,
     onlyFiles: true,
-    ignore: ignoreFiles,
+    ignore: defaultIgnores,
   });
 
   if (!flattenToDirectory) {
@@ -361,13 +369,20 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           type: 'boolean',
           default: false,
         })
+        .option('ignore', {
+          alias: 'i',
+          type: 'string',
+          array: true,
+          describe: 'Additional glob patterns to ignore (e.g. "*.log" "temp/**")',
+          default: [],
+        })
     }, async (argv) => {
       let source = argv.source as string;           // now always defined (default '.')
       let target = argv.target as string;           // may be undefined
 
       const move: boolean = argv.move as boolean;
       const overwrite: boolean = argv.overwrite as boolean;
-      const ignorePatterns: string[] = argv.ignore as string[] || [];
+      const ignorePatterns: string[] = (argv.ignore as string[] | undefined) ?? [];
       const respectGitignore: boolean = argv.gitignore as boolean;
       const flattenToDirectory: boolean = argv.directory as boolean;
 
