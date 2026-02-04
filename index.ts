@@ -1,12 +1,13 @@
 #!/usr/bin/env bun
-import { copyFile, rename, rm, stat, mkdir, readdir, rmdir, readFile, writeFile } from 'node:fs/promises';
-import { join, relative, sep, resolve, extname } from 'node:path';
 import { createReadStream, createWriteStream } from 'node:fs';
-import { pipeline, finished } from 'node:stream/promises';
+import { copyFile, mkdir, readdir, readFile, rename, rm, rmdir, stat, writeFile } from 'node:fs/promises';
+import { extname, join, relative, resolve, sep } from 'node:path';
+import { finished, pipeline } from 'node:stream/promises';
+import { globby } from 'globby';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { globby } from 'globby';
 import pkg from './package.json' assert { type: 'json' };
+
 import GithubSlugger from 'github-slugger';
 
 function escapePathComponent(component: string): string {
@@ -261,7 +262,7 @@ export async function flattenDirectory(
       if (currentPath) {
         const anchor = anchorMap.get(currentPath)!;
         writeStream.write(`<a id="${anchor}"></a>\n# ${currentPath}\n\n`);
-        writeStream.write(`File Tree\n\n`);
+        writeStream.write('File Tree\n\n');
 
         const parentPath = currentPath.includes('/')
           ? currentPath.slice(0, currentPath.lastIndexOf('/'))
@@ -275,7 +276,7 @@ export async function flattenDirectory(
         const anchor = anchorMap.get(file.relPath)!;
         writeStream.write(`<a id="${anchor}"></a>\n# ${file.relPath}\n\n`);
 
-        let ext = extname(file.srcPath).slice(1) || 'text';
+        const ext = extname(file.srcPath).slice(1) || 'text';
         const lang = ext;
         const isMd = ['md', 'markdown'].includes(ext.toLowerCase());
         const ticks = isMd ? '````' : '```';
@@ -379,7 +380,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           default: [],
         })
     }, async (argv) => {
-      let source = argv.source as string;           // now always defined (default '.')
+      const source = argv.source as string;           // now always defined (default '.')
       let target = argv.target as string;           // may be undefined
 
       const move: boolean = argv.move as boolean;

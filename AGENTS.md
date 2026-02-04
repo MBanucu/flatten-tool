@@ -23,10 +23,10 @@ Version: 1.7.0
 - Debug: `bun test --inspect`
 - Pattern: `bun test -t "pattern"`
 
-### Building
-- Development: No build needed (Bun handles TS)
-- Production binary: `bun build ./index.ts --compile --outfile flatten-tool`
-- Nix: `nix build`
+### Linting/Formatting
+- Formatting: `bun run format`
+- Linting: `bun run lint`
+- Check (lint + format): `bun run check`
 
 ### Running
 - Direct: `bun run index.ts [args]`
@@ -77,6 +77,8 @@ import { buildTreeObject } from './helpers.ts';
 - No trailing whitespace
 - Blank lines between logical blocks of code
 - Consistent spacing around operators and keywords
+
+Use Biome for formatting and linting. Run `bun run check` before committing.
 
 ### Types
 - Explicit types for all function parameters and return values
@@ -201,6 +203,7 @@ test('flattens directory with nested files', async () => {
 - Feature branches for new work
 - Squash commits when merging to main
 - Descriptive commit messages explaining the change
+- Run Biome check before pushing changes.
 
 ### Nix
 - Simple flake.nix for reproducible builds

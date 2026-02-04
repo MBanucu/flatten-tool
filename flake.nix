@@ -35,9 +35,11 @@
           '';
         };
         packages.default = self.packages.${system}.flatten-tool;
-        apps.default = {
-          type = "app";
-          program = "${self.packages.${system}.flatten-tool}/bin/flatten-tool";
+        devShells.default = pkgs.mkShell {
+          packages = with pkgs; [
+            bun
+            biome
+          ];
         };
       }
     );
