@@ -147,6 +147,8 @@ export async function flattenDirectory(
       }
     }
 
+    sections.push({ path: '', headerText: 'Project File Tree' });
+
     collectSections(treeObj, '');
 
     const anchorMap = new Map<string, string>();
@@ -161,10 +163,21 @@ export async function flattenDirectory(
       node: any,
       depth: number = 0,
       prefix: string = '',
-      anchorMap: Map<string, string>
+      anchorMap: Map<string, string>,
+      parentPath: string | null  // null for global root (no ..)
     ): string {
       let result = '';
       const indent = '  '.repeat(depth);
+
+      // Add .. if we have a parent
+      if (parentPath !== null) {
+        const parentAnchor = anchorMap.get(parentPath) ?? '';
+        result += `${indent}- [..](#${parentAnchor})\n`;
+      }
+
+      // Determine indentation for direct children
+      const entryIndent = '  '.repeat(depth);
+
       const entries: [string, any][] = Object.entries(node);
 
       entries.sort(([a], [b]) => {
@@ -180,17 +193,27 @@ export async function flattenDirectory(
         const display = isDir ? name + '/' : name;
         const pathHere = prefix ? `${prefix}/${name}` : name;
         const anchor = anchorMap.get(pathHere) ?? '';
-        result += `${indent}- [${display}](#${anchor})\n`;
+
+        result += `${entryIndent}- [${display}](#${anchor})\n`;
+
         if (isDir) {
-          result += renderMarkdownTree(value, depth + 1, pathHere, anchorMap);
+          // Recurse with increased depth; child's parent is current prefix
+          result += renderMarkdownTree(
+            value,
+            depth + 1,
+            pathHere,
+            anchorMap,
+            prefix
+          );
         }
       }
+
       return result;
     }
 
     // Render global tree with correct anchors
-    let treeMarkdown = "# Project File Tree\n\n- .\n";
-    treeMarkdown += renderMarkdownTree(treeObj, 1, '', anchorMap);
+    let treeMarkdown = "# Project File Tree\n\n";
+    treeMarkdown += renderMarkdownTree(treeObj, 0, '', anchorMap, null);
     treeMarkdown += "\n\n";
 
     const writeStream = createWriteStream(absTarget);
@@ -230,8 +253,12 @@ export async function flattenDirectory(
       if (currentPath) {
         writeStream.write(`# ${currentPath}\n\n`);
         writeStream.write(`File Tree\n\n`);
-        writeStream.write(`- .\n`);
-        writeStream.write(renderMarkdownTree(node, 1, currentPath, anchorMap));
+
+        const parentPath = currentPath.includes('/')
+          ? currentPath.slice(0, currentPath.lastIndexOf('/'))
+          : '';
+
+        writeStream.write(renderMarkdownTree(node, 0, currentPath, anchorMap, parentPath));
         writeStream.write('\n');
       }
 

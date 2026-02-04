@@ -1,6 +1,6 @@
 {
   "name": "flatten-tool",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "CLI tool to flatten directory structures: merge files into a single Markdown file (default) or copy/move to a flat directory with escaped filenames. Respects .gitignore, supports move/overwrite, and more.",
   "module": "index.ts",
   "type": "module",

@@ -140,6 +140,10 @@ This project uses Bun for runtime, TypeScript for type safety, and follows the g
 
 ## Changelog
 
+### v1.6.2
+- Updated AGENTS.md with revised coding guidelines.
+- Added '..' links in subdirectory file trees for navigation to parent directories.
+
 ### v1.6.1
 - Added instructions for running flatten-tool directly with npx and bunx.
 
