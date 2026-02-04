@@ -38,6 +38,7 @@
   "homepage": "https://github.com/MBanucu/flatten-tool#readme",
   "files": [
     "index.ts",
+    "src/**/*.ts",
     "README.md",
     "LICENSE"
   ],
