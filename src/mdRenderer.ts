@@ -27,20 +27,14 @@ export function renderMarkdownTree(
   for (const [key, value] of entries) {
     const isDir = key.endsWith('/');
     const name = isDir ? key.slice(0, -1) : key;
-    const display = isDir ? name + '/' : name;
+    const display = isDir ? `${name}/` : name;
     const pathHere = prefix ? `${prefix}/${name}` : name;
     const anchor = anchorMap.get(pathHere) ?? '';
 
     result += `${entryIndent}- [${display}](#${anchor})\n`;
 
     if (isDir) {
-      result += renderMarkdownTree(
-        value,
-        depth + 1,
-        pathHere,
-        anchorMap,
-        prefix
-      );
+      result += renderMarkdownTree(value, depth + 1, pathHere, anchorMap, prefix);
     }
   }
 

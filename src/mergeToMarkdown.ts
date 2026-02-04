@@ -1,11 +1,10 @@
 import { createReadStream, createWriteStream } from 'node:fs';
-import { extname } from 'node:path';
-import { finished, pipeline } from 'node:stream/promises';
-import { relative } from 'node:path';
 import { stat } from 'node:fs/promises';
-import { buildTreeObject } from './treeBuilder.ts';
-import { renderMarkdownTree } from './mdRenderer.ts';
+import { extname, relative } from 'node:path';
+import { finished, pipeline } from 'node:stream/promises';
 import GithubSlugger from 'github-slugger';
+import { renderMarkdownTree } from './mdRenderer.ts';
+import { buildTreeObject } from './treeBuilder.ts';
 
 interface MergeOptions {
   overwrite: boolean;
@@ -27,12 +26,12 @@ export async function mergeToMarkdown(
     if (err.code !== 'ENOENT') throw err;
   }
 
-  const fileEntries = files.map(srcPath => ({
+  const fileEntries = files.map((srcPath) => ({
     srcPath,
-    relPath: relative(absSource, srcPath).replace(/\\/g, '/')
+    relPath: relative(absSource, srcPath).replace(/\\/g, '/'),
   }));
 
-  const relPaths = fileEntries.map(e => e.relPath);
+  const relPaths = fileEntries.map((e) => e.relPath);
   const treeObj = buildTreeObject(relPaths);
 
   const pathMap = new Map<string, string>();
@@ -91,7 +90,7 @@ export async function mergeToMarkdown(
 
   let treeMarkdown = `<a id="${anchorMap.get('')!}"></a>\n# Project File Tree\n\n`;
   treeMarkdown += renderMarkdownTree(treeObj, 0, '', anchorMap, null);
-  treeMarkdown += "\n\n";
+  treeMarkdown += '\n\n';
 
   writeStream.write(treeMarkdown);
 

@@ -1,4 +1,4 @@
-import { stat, rm } from 'node:fs/promises';
+import { rm, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { globby } from 'globby';
 import { flattenToDirectory } from './flattenToDirectory.ts';
@@ -32,15 +32,35 @@ export async function flattenDirectory(
     throw new Error(`Source directory "${source}" does not exist.`);
   }
 
-  const extraIgnores = options.ignorePatterns.map(pattern => `!${pattern}`);
+  const extraIgnores = options.ignorePatterns.map((pattern) => `!${pattern}`);
 
   const defaultIgnores = ['.git'];
   if (!options.flattenToDirectory) {
     const binaryExts = [
-      'gif', 'png', 'jpg', 'jpeg', 'webp', 'svg', 'bmp', 'ico',
-      'pdf', 'zip', 'tar', 'gz', 'xz', '7z',
-      'mp3', 'mp4', 'webm', 'ogg', 'wav',
-      'exe', 'dll', 'so', 'dylib', 'bin'
+      'gif',
+      'png',
+      'jpg',
+      'jpeg',
+      'webp',
+      'svg',
+      'bmp',
+      'ico',
+      'pdf',
+      'zip',
+      'tar',
+      'gz',
+      'xz',
+      '7z',
+      'mp3',
+      'mp4',
+      'webm',
+      'ogg',
+      'wav',
+      'exe',
+      'dll',
+      'so',
+      'dylib',
+      'bin',
     ];
     defaultIgnores.push(`**/*.{${binaryExts.join(',')}}`);
   }

@@ -14,6 +14,7 @@
     }
   },
   "files": {
-    "includes": ["index.ts", "test/*.ts", "package.json", "biome.json"]
+    "includes": ["**/*", "!.devenv", "!.direnv", "!node_modules", "!result"],
+    "ignoreUnknown": true
   }
 }
