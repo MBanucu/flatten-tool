@@ -7,17 +7,10 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { globby } from 'globby';
 import pkg from './package.json' assert { type: 'json' };
+import GithubSlugger from 'github-slugger';
 
 function escapePathComponent(component: string): string {
   return component.replace(/_/g, '__');
-}
-
-function generateMarkdownAnchor(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove punctuation except hyphens and underscores
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 function buildTreeObject(relPaths: string[]): any {
@@ -39,33 +32,6 @@ function buildTreeObject(relPaths: string[]): any {
     }
   }
   return tree;
-}
-
-function renderMarkdownTree(node: any, depth: number): string {
-  let result = '';
-  const indent = '  '.repeat(depth);
-  const entries: [string, any][] = Object.entries(node);
-
-  entries.sort(([a], [b]) => {
-    const aDir = a.endsWith('/');
-    const bDir = b.endsWith('/');
-    if (aDir !== bDir) return aDir ? -1 : 1;
-    return a.toLowerCase().localeCompare(b.toLowerCase());
-  });
-
-  for (const [key, value] of entries) {
-    const isDir = key.endsWith('/');
-    const display = isDir ? key.slice(0, -1) + '/' : key;
-    if (isDir) {
-      result += `${indent}- ${display}\n`;
-      result += renderMarkdownTree(value, depth + 1);
-    } else {
-      const fullPath = value as string;
-      const anchor = generateMarkdownAnchor(fullPath);
-      result += `${indent}- [${display}](#${anchor})\n`;
-    }
-  }
-  return result;
 }
 
 async function removeEmptyDirs(dir: string, root?: string): Promise<void> {
@@ -129,44 +95,165 @@ export async function flattenDirectory(
       if (err.code !== 'ENOENT') throw err;
     }
 
-    // Sort files for consistent content order
     const fileEntries = files.map(srcPath => ({
       srcPath,
       relPath: relative(absSource, srcPath).replace(/\\/g, '/')
     }));
-    fileEntries.sort((a, b) => a.relPath.toLowerCase().localeCompare(b.relPath.toLowerCase()));
 
     const relPaths = fileEntries.map(e => e.relPath);
-
-    // Build tree structure
     const treeObj = buildTreeObject(relPaths);
 
-    // Render as clickable nested Markdown list
+    // Map for quick lookup of srcPath by relPath
+    const pathMap = new Map<string, string>();
+    fileEntries.forEach(({ srcPath, relPath }) => {
+      pathMap.set(relPath, srcPath);
+    });
+
+    // === NEW: Precompute anchors in document order ===
+    interface Section {
+      path: string;
+      headerText: string;
+    }
+
+    const sections: Section[] = [];
+
+    function collectSections(node: any, currentPath: string): void {
+      const dirs: { name: string; child: any }[] = [];
+      const files: { relPath: string }[] = [];
+
+      for (const [key, value] of Object.entries(node) as [string, any][]) {
+        if (key.endsWith('/')) {
+          const name = key.slice(0, -1);
+          dirs.push({ name, child: value });
+        } else {
+          files.push({ relPath: value as string });
+        }
+      }
+
+      dirs.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+      files.sort((a, b) => a.relPath.toLowerCase().localeCompare(b.relPath.toLowerCase()));
+
+      for (const dir of dirs) {
+        const newPath = currentPath ? `${currentPath}/${dir.name}` : dir.name;
+        collectSections(dir.child, newPath);
+      }
+
+      if (currentPath) {
+        sections.push({ path: currentPath, headerText: currentPath }); // no trailing /
+      }
+
+      for (const file of files) {
+        sections.push({ path: file.relPath, headerText: file.relPath });
+      }
+    }
+
+    collectSections(treeObj, '');
+
+    const anchorMap = new Map<string, string>();
+    const anchorSlugger = new GithubSlugger();
+    for (const sec of sections) {
+      anchorMap.set(sec.path, anchorSlugger.slug(sec.headerText));
+    }
+    // === END NEW ===
+
+    // Updated renderMarkdownTree to use precomputed anchors
+    function renderMarkdownTree(
+      node: any,
+      depth: number = 0,
+      prefix: string = '',
+      anchorMap: Map<string, string>
+    ): string {
+      let result = '';
+      const indent = '  '.repeat(depth);
+      const entries: [string, any][] = Object.entries(node);
+
+      entries.sort(([a], [b]) => {
+        const aDir = a.endsWith('/');
+        const bDir = b.endsWith('/');
+        if (aDir !== bDir) return aDir ? -1 : 1;
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      });
+
+      for (const [key, value] of entries) {
+        const isDir = key.endsWith('/');
+        const name = isDir ? key.slice(0, -1) : key;
+        const display = isDir ? name + '/' : name;
+        const pathHere = prefix ? `${prefix}/${name}` : name;
+        const anchor = anchorMap.get(pathHere) ?? '';
+        result += `${indent}- [${display}](#${anchor})\n`;
+        if (isDir) {
+          result += renderMarkdownTree(value, depth + 1, pathHere, anchorMap);
+        }
+      }
+      return result;
+    }
+
+    // Render global tree with correct anchors
     let treeMarkdown = "# Project File Tree\n\n- .\n";
-    treeMarkdown += renderMarkdownTree(treeObj, 1);
-    treeMarkdown += "\n";
+    treeMarkdown += renderMarkdownTree(treeObj, 1, '', anchorMap);
+    treeMarkdown += "\n\n";
 
     const writeStream = createWriteStream(absTarget);
     writeStream.setMaxListeners(0);
-
     writeStream.write(treeMarkdown);
 
-    // Write file contents (now in sorted order)
-    for (const { srcPath, relPath } of fileEntries) {
-      let ext = extname(srcPath).slice(1) || 'text';
-      const lang = ext;
-      const isMd = ['md', 'markdown'].includes(ext.toLowerCase());
-      const ticks = isMd ? '````' : '```';
+    async function writeContentRecursive(
+      node: any,
+      currentPath: string,
+      writeStream: import('node:fs').WriteStream,
+      pathMap: Map<string, string>
+    ): Promise<void> {
+      const dirs: { name: string; child: any }[] = [];
+      const files: { name: string; relPath: string; srcPath: string }[] = [];
 
-      writeStream.write(`## ${relPath}\n\n${ticks}${lang}\n`);
+      for (const [key, value] of Object.entries(node) as [string, any][]) {
+        if (key.endsWith('/')) {
+          const name = key.slice(0, -1);
+          dirs.push({ name, child: value });
+        } else {
+          const relPath = value as string;
+          const srcPath = pathMap.get(relPath)!;
+          const name = key;
+          files.push({ name, relPath, srcPath });
+        }
+      }
 
-      const readStream = createReadStream(srcPath, { encoding: 'utf8' });
-      await pipeline(readStream, writeStream, { end: false });
+      dirs.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+      files.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
-      writeStream.write(`\n${ticks}\n\n`);
+      for (const dir of dirs) {
+        const newPath = currentPath ? `${currentPath}/${dir.name}` : dir.name;
+        await writeContentRecursive(dir.child, newPath, writeStream, pathMap);
+      }
+
+      // Directory section (only for non-root) — no trailing /
+      if (currentPath) {
+        writeStream.write(`# ${currentPath}\n\n`);
+        writeStream.write(`File Tree\n\n`);
+        writeStream.write(`- .\n`);
+        writeStream.write(renderMarkdownTree(node, 1, currentPath, anchorMap));
+        writeStream.write('\n');
+      }
+
+      for (const file of files) {
+        writeStream.write(`# ${file.relPath}\n\n`);
+
+        let ext = extname(file.srcPath).slice(1) || 'text';
+        const lang = ext;
+        const isMd = ['md', 'markdown'].includes(ext.toLowerCase());
+        const ticks = isMd ? '````' : '```';
+
+        writeStream.write(`${ticks}${lang}\n`);
+
+        const readStream = createReadStream(file.srcPath, { encoding: 'utf8' });
+        await pipeline(readStream, writeStream, { end: false });
+
+        writeStream.write(`\n${ticks}\n\n`);
+      }
     }
 
-    // Close the output file and wait for it to finish
+    await writeContentRecursive(treeObj, '', writeStream, pathMap);
+
     writeStream.end();
     await finished(writeStream);
 

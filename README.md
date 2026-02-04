@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/flatten-tool)](https://www.npmjs.com/package/flatten-tool)
 
-A CLI utility to flatten directory structures.
+A CLI utility to flatten directory structures, with perfect GitHub Flavored Markdown compatibility.
 
 [![asciicast](docs/demo.gif)](https://asciinema.org/a/ThswNC1vrdlK0wdD)
 
@@ -10,13 +10,31 @@ A CLI utility to flatten directory structures.
 
 Requires [Bun](https://bun.sh) runtime (v1.1+).
 
+### Via npm
+
 ```bash
 npm install -g flatten-tool
 ```
 
+### For Development
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/MBanucu/flatten-tool.git
+cd flatten-tool
+bun install
+```
+
+Run directly with Bun:
+
+```bash
+bun run index.ts [args]
+```
+
 ## Usage
 
-By default, the tool merges all file contents into a single Markdown file, starting with a project file tree for navigation, followed by each file's content under a header with its relative path, in a code block with appropriate language highlighting based on the file extension. Ignores and filters are applied as usual.
+By default, the tool merges all file contents into a single Markdown file, starting with a project file tree for navigation, followed by each file's content under a header with its full relative path, in a code block with appropriate language highlighting based on the file extension. The tree includes clickable links to file sections using GitHub-compatible anchors. Ignores and filters are applied as usual.
 
 The `<source>` argument is optional and defaults to the current directory (`.`). The `<target>` argument is also optional and defaults to `flattened.md` (or `flattened/` when using `--directory`).
 
@@ -112,6 +130,12 @@ bun test -t "flattens a simple nested directory"
 This project uses Bun for runtime, TypeScript for type safety, and follows the guidelines in `AGENTS.md` for coding standards.
 
 ## Changelog
+
+### v1.6.0
+- Perfect GitHub compatibility: anchors now exactly match GitHub Flavored Markdown auto-generation using github-slugger.
+- Cleaner directory headers: removed trailing `/` for better readability.
+- Precomputed anchors: ensures no mismatches even with slug collisions.
+- Removed unused treeify dependency.
 
 ### v1.5.0
 - Improved navigation: project file tree is now a clickable nested Markdown list with links to each file's content section using standard markdown anchors.

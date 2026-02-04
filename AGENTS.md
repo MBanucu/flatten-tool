@@ -4,9 +4,9 @@ This document provides essential information for AI coding agents (like opencode
 
 ## Repository Overview
 
-flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with a clickable project file tree at the top and special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead.
+flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures by copying or moving files to a single directory with escaped path components in filenames. It supports ignore patterns via .gitignore files and command-line options, designed for reproducibility. Key features include handling nested directories, respecting git ignore rules, automatic .git exclusion, optional file overwriting or gitignore disabling, and merging file contents into a single Markdown file with a clickable project file tree at the top and special handling for markdown sources. By default, it merges all file contents into a single Markdown file; use `--directory` to flatten to individual files instead. Anchors are fully compatible with GitHub Flavored Markdown through precomputed slug generation.
 
-Version: 1.5.0
+Version: 1.6.0
 
 ## Build/Lint/Test Commands
 
@@ -68,7 +68,7 @@ Version: 1.5.0
 - Prefer named imports over default imports
 - Use Bun's built-in modules (e.g., `node:fs/promises`, `node:fs` for streams, `node:stream/promises` for pipeline utilities)
 - Import JSON files with `assert { type: 'json' }` for configuration: `import pkg from './package.json' assert { type: 'json' };`
-- Key dependencies: `globby` for file globbing, `yargs` for CLI parsing, `ignore` for gitignore support, `minimatch` for pattern matching
+- Key dependencies: `globby` for file globbing, `yargs` for CLI parsing, `ignore` for gitignore support, `minimatch` for pattern matching, `github-slugger` for GitHub-compatible anchor generation
 
 ### Formatting
 - Use consistent indentation (2 spaces)
@@ -110,11 +110,13 @@ Version: 1.5.0
 
 ### Tree Rendering and Linking
 - Use `buildTreeObject()` to create nested tree structures from file paths
-- Use `renderMarkdownTree()` to generate clickable nested Markdown lists
-- Generate standard markdown anchors using `generateMarkdownAnchor()`: converts to lowercase, removes punctuation except hyphens/underscores, replaces spaces with hyphens
-- File content headers use format: `## ${relPath}`
-- Tree links use format: `[${display}](#${anchor})` pointing to standard markdown-generated anchors
+- Use `renderMarkdownTree()` to generate clickable nested Markdown lists with precomputed anchors
+- Generate GitHub-compatible markdown anchors using `GithubSlugger`: exact replication of GitHub's heading ID generation
+- Directory headers use format: `# ${dirPath}` (full path, no trailing `/`)
+- File content headers use format: `# ${fileRelPath}` (full relative path)
+- Tree links use format: `[${display}](#${anchor})` pointing to precomputed GitHub-compatible anchors
 - Sort tree entries: directories first, then files, case-insensitive alphabetical
+- Precompute anchors in document order to ensure perfect compatibility with GitHub and other renderers
 
 ### Error Handling
 - Use try-catch for synchronous errors
