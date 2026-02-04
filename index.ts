@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import pkg from './package.json' assert { type: 'json' };
+
 import { flattenDirectory } from './src/flatten.ts';
 
 export { flattenDirectory };

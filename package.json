@@ -11,7 +11,8 @@
     "test": "bun test",
     "format": "biome format --write .",
     "lint": "biome lint .",
-    "check": "biome check --write ."
+    "check": "biome check --write .",
+    "postinstall": "bun nix/postInstall.js"
   },
   "engines": {
     "bun": ">=1.1.0"
