@@ -2,12 +2,6 @@
 
 This document provides essential information for AI coding agents working on the flatten-tool repository.
 
-## Repository Overview
-
-flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures. It merges file contents into a single Markdown file with a clickable project file tree, or flattens to individual files. Supports ignore patterns, GitHub-compatible anchors.
-
-Version: 1.8.0
-
 ## Build/Lint/Test Commands
 
 ### Prerequisites
@@ -158,18 +152,6 @@ Use Biome for formatting and linting. Run `bun run check` before committing.
 - Squash commits when merging to main
 - Descriptive commit messages explaining the change
 - Run Biome check before pushing changes
-
-### Nix
-- Simple flake.nix for reproducible builds
-- Update flake.lock after dependency changes
-- Use for CI/CD if available
-
-### Dependencies
-- Keep dependencies minimal
-- Use latest stable versions
-- Audit dependencies regularly
-- Prefer small, focused libraries
-- Pin versions in package.json for reproducibility
 
 ## IDE and AI Rules
 
