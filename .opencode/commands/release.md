@@ -41,9 +41,11 @@ First, review the key guidelines from Keep a Changelog (https://keepachangelog.c
     - If no [Unreleased], insert the new section after the header.
     - Preserve the rest of the file.
 
-12. Output the full updated CHANGELOG.md content and overwrite the file.
+12. Update package.json version to ${next_version}
 
-13. Stage and commit the update: !git add CHANGELOG.md && git commit -m "chore: update changelog for v${next_version}"
+13. Output the full updated CHANGELOG.md content and overwrite the file.
+
+13. Stage and commit the update: !git add CHANGELOG.md package.json && git commit -m "chore: update changelog for v${next_version}"
 
 14. Create annotated tag: !git tag -a v${next_version} -m "Release v${next_version}"
 
