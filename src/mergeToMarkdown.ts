@@ -45,11 +45,6 @@ export async function mergeToMarkdown(
 
   const treeObj = buildTreeObject(fileEntries);
 
-  const pathMap = new Map<string, string>();
-  fileEntries.forEach(({ srcPath, relPath }) => {
-    pathMap.set(relPath, srcPath);
-  });
-
   type Section = TreeRootDirectory<string> | TreeDescendantDirectory<string> | TreeFile<string>;
 
   const sections: Section[] = [];
