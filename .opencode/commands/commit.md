@@ -43,6 +43,8 @@ Please perform the following steps carefully to create high-quality git commits:
 
      Note: Since this is a CLI tool (not a library), 'feat' should only be used for changes that affect the CLI interface (new commands, options) or the behavior of CLI output. Internal code changes or new functionality that doesn't change user-facing CLI behavior should use 'chore' or 'refactor'.
 
+     Clarification: Enhancements to opencode's internal commands (like this one) that improve development workflow but don't affect the project's end-user CLI interface should use 'chore' or 'refactor', not 'feat'.
+
    - Commit the staged changes with the crafted message using `git commit -m "<message>"` (include body and footer in the message if needed, using newlines).
 
 6. If multiple commits are needed, perform them sequentially, restaging as necessary after each commit.
