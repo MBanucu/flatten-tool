@@ -29,7 +29,7 @@
           buildInputs = [ pkgs.makeWrapper ];
           installPhase = ''
             mkdir -p $out/bin
-            cp index.ts package.json $out/
+            cp -r index.ts package.json src $out/
             makeWrapper ${pkgs.bun}/bin/bun $out/bin/flatten-tool \
               --add-flags $out/index.ts
           '';
