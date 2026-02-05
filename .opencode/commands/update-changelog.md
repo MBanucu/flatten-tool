@@ -47,13 +47,15 @@ Compute next_version by incrementing from last_version accordingly.
 
 7. Get today's date: !date +%Y-%m-%d
 
-8. Create new section: ## [next_version] - today's_date
+8. Decide on release strategy:
+   - For unreleased changes: Add or update the [Unreleased] section at the top.
+   - For a new release: Create new section ## [next_version] - today's_date
 
-Add the grouped changes.
+Add the grouped changes to the appropriate section.
 
 If [Unreleased] exists, incorporate or replace it.
 
-9. Preserve existing CHANGELOG content, inserting the new section after [Unreleased] or at the top after the header.
+9. Preserve existing CHANGELOG content, inserting the new section after the header or updating [Unreleased] as appropriate.
 
 10. Output the full updated CHANGELOG.md content.
 
