@@ -6,7 +6,7 @@ This document provides essential information for AI coding agents working on the
 
 flatten-tool is a CLI utility built with Bun and TypeScript that flattens directory structures. It merges file contents into a single Markdown file with a clickable project file tree, or flattens to individual files. Supports ignore patterns, GitHub-compatible anchors.
 
-Version: 1.7.0
+Version: 1.8.0
 
 ## Build/Lint/Test Commands
 
