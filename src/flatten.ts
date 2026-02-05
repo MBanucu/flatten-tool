@@ -32,8 +32,6 @@ export async function flattenDirectory(
     throw new Error(`Source directory "${source}" does not exist.`);
   }
 
-  const extraIgnores = options.ignorePatterns.map((pattern) => `!${pattern}`);
-
   const defaultIgnores = ['.git'];
   if (!options.flattenToDirectory) {
     const binaryExts = [
@@ -65,8 +63,8 @@ export async function flattenDirectory(
     defaultIgnores.push(`**/*.{${binaryExts.join(',')}}`);
   }
 
-  const ignoreList = [...defaultIgnores, absTarget];
-  const files = await globby(['**', ...extraIgnores], {
+  const ignoreList = [...defaultIgnores, ...options.ignorePatterns, absTarget];
+  const files = await globby(['**'], {
     cwd: absSource,
     gitignore: options.respectGitignore,
     absolute: true,
