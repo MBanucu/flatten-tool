@@ -33,11 +33,11 @@ export interface TreeDirectory<T extends SlugType> extends TreeEntry<T> {
   children: TreeChildren<T>;
 }
 
-export interface TreeRootDirectory<T extends SlugType> extends TreeDirectory<T>, TreeRoot { }
+export interface TreeRootDirectory<T extends SlugType> extends TreeDirectory<T>, TreeRoot {}
 
 export interface TreeDescendantDirectory<T extends SlugType>
   extends TreeDirectory<T>,
-  TreeDescendant<T> { }
+    TreeDescendant<T> {}
 
 export interface TreeChildren<T extends SlugType> {
   [key: string]: TreeFile<T> | TreeDescendantDirectory<T>;
@@ -102,7 +102,10 @@ export function buildTreeObject(paths: { relPath: string; srcPath: string }[]) {
 export class SectionsCollector {
   private anchorSlugger: GithubSlugger = new GithubSlugger();
 
-  private createChild(childWithoutSlugDir: TreeDescendantDirectory<undefined>, parent: TreeDirectory<string>) {
+  private createChild(
+    childWithoutSlugDir: TreeDescendantDirectory<undefined>,
+    parent: TreeDirectory<string>
+  ) {
     const child: TreeDescendantDirectory<string> = {
       ...childWithoutSlugDir,
       children: {},
@@ -112,18 +115,17 @@ export class SectionsCollector {
 
     const { children: subChildren, sections: subSections } = this.collectSections(
       childWithoutSlugDir,
-      child,
+      child
     );
     child.children = subChildren;
 
-    return { child, subSections }
+    return { child, subSections };
   }
 
   private collectSections(
     parentWithoutSlug: TreeDirectory<undefined>,
-    parent: TreeDirectory<string>,
+    parent: TreeDirectory<string>
   ): { children: TreeChildren<string>; sections: Section[] } {
-
     const children: TreeChildren<string> = {};
     const sections: Section[] = [];
 
@@ -133,11 +135,10 @@ export class SectionsCollector {
     for (const [childWithoutSlugName, childWithoutSlug] of childrenWithoutSlug) {
       if (childWithoutSlug.type === 'directory') {
         const { child, subSections } = this.createChild(childWithoutSlug, parent);
-        
+
         children[childWithoutSlugName] = child;
         sections.push(child);
         sections.push(...subSections);
-
       } else {
         const childWithoutSlugFile = childWithoutSlug;
 
@@ -165,11 +166,8 @@ export class SectionsCollector {
       children: {},
       slug: this.anchorSlugger.slug(rootWithoutSlug.name),
     };
-    
-    const { children, sections: subSections } = this.collectSections(
-      rootWithoutSlug,
-      root,
-    );
+
+    const { children, sections: subSections } = this.collectSections(rootWithoutSlug, root);
 
     root.children = children;
     sections.push(root);

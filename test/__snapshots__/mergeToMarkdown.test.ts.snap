@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`merges files into a single md file 1`] = `
+exports[`merges files into a single Markdown file without move 1`] = `
 "<a id="project-file-tree"></a>
 # Project File Tree
 
@@ -35,7 +35,7 @@ content1
 "
 `;
 
-exports[`handles md files with nested code blocks correctly 1`] = `
+exports[`handles Markdown files with nested code blocks correctly 1`] = `
 "<a id="project-file-tree"></a>
 # Project File Tree
 
@@ -81,7 +81,7 @@ content1
 "
 `;
 
-exports[`merges files into md with move 1`] = `
+exports[`merges files into Markdown with move 1`] = `
 "<a id="project-file-tree"></a>
 # Project File Tree
 
@@ -116,7 +116,7 @@ content1
 "
 `;
 
-exports[`ignores files when merging to md 1`] = `
+exports[`ignores files when merging to Markdown with gitignore 1`] = `
 "<a id="project-file-tree"></a>
 # Project File Tree
 
@@ -142,7 +142,7 @@ content1
 "
 `;
 
-exports[`excludes gif files by default when merging to md 1`] = `
+exports[`excludes GIF files by default when merging to Markdown 1`] = `
 "<a id="project-file-tree"></a>
 # Project File Tree
 
@@ -160,7 +160,7 @@ content1
 "
 `;
 
-exports[`excludes gif files in subdirs by default when merging to md 1`] = `
+exports[`excludes GIF files in subdirs by default when merging to Markdown 1`] = `
 "<a id="project-file-tree"></a>
 # Project File Tree
 
@@ -190,6 +190,34 @@ content2
 
 \`\`\`txt
 content1
+\`\`\`
+
+"
+`;
+
+exports[`handles empty source directory 1`] = `
+"<a id="project-file-tree"></a>
+# Project File Tree
+
+File Tree
+
+
+"
+`;
+
+exports[`handles single file 1`] = `
+"<a id="project-file-tree"></a>
+# Project File Tree
+
+File Tree
+
+- [file.txt](#filetxt)
+
+<a id="filetxt"></a>
+# file.txt
+
+\`\`\`txt
+content
 \`\`\`
 
 "
