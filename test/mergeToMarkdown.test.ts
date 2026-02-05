@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, test } from 'bun:test';
+import { afterEach, beforeEach, expect, spyOn, test } from 'bun:test';
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -239,4 +239,25 @@ test('ignores the destination file when it exists in source directory', async ()
   expect(mdContent).toContain('content1');
   expect(mdContent).not.toContain('existing md content');
   expect(mdContent).not.toContain('output.md');
+});
+
+test('verbose mode logs directories searched', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+
+  const consoleSpy = spyOn(console, 'log');
+
+  await flattenDirectory(sourceDir, mdTarget, {
+    move: false,
+    overwrite: false,
+    ignorePatterns: [],
+    respectGitignore: true,
+    flattenToDirectory: false,
+    verbose: true,
+  });
+
+  expect(consoleSpy).toHaveBeenCalledWith(`Searching recursively from: ${sourceDir}`);
+  expect(consoleSpy).toHaveBeenCalledWith('Directories searched:');
+  // The subdir should be logged
+  expect(consoleSpy).toHaveBeenCalledWith(join(sourceDir, 'subdir'));
 });

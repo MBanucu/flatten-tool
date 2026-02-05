@@ -11,6 +11,7 @@ interface FlattenOptions {
   ignorePatterns: string[];
   respectGitignore: boolean;
   flattenToDirectory: boolean;
+  verbose?: boolean;
 }
 
 export async function flattenDirectory(
@@ -64,6 +65,25 @@ export async function flattenDirectory(
   }
 
   const ignoreList = [...defaultIgnores, ...options.ignorePatterns, absTarget];
+
+  const verbose = options.verbose ?? false;
+
+  if (verbose) {
+    console.log(`Searching recursively from: ${absSource}`);
+    const dirs = await globby(['**'], {
+      cwd: absSource,
+      gitignore: options.respectGitignore,
+      absolute: true,
+      dot: true,
+      onlyDirectories: true,
+      ignore: ignoreList,
+    });
+    console.log('Directories searched:');
+    dirs.sort().forEach((dir) => {
+      console.log(dir);
+    });
+  }
+
   const files = await globby(['**'], {
     cwd: absSource,
     gitignore: options.respectGitignore,

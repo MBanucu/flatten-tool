@@ -57,6 +57,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             array: true,
             describe: 'Additional glob patterns to ignore (e.g. "*.log" "temp/**")',
             default: [],
+          })
+          .option('verbose', {
+            describe: 'Verbose output: print all directories being searched',
+            type: 'boolean',
+            default: false,
           });
       },
       async (argv) => {
@@ -67,6 +72,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         const ignorePatterns = argv.ignore as string[];
         const respectGitignore = argv.gitignore as boolean;
         const flattenToDirectory = argv.directory as boolean;
+        const verbose = argv.verbose as boolean;
 
         if (!target) {
           target = flattenToDirectory
@@ -80,6 +86,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           ignorePatterns,
           respectGitignore,
           flattenToDirectory,
+          verbose,
         });
         const action = move ? 'moved' : 'copied';
         const mode = flattenToDirectory ? 'directory' : 'Markdown file';
