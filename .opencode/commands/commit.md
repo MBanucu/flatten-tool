@@ -39,11 +39,9 @@ Please perform the following steps carefully to create high-quality git commits:
      - Optional body: explain **what** and **why** (not how), wrap at 72 characters
      - Optional footer: for BREAKING CHANGE, references to issues, etc.
 
+     Analyze the project to determine its type (e.g., CLI tool, library, web app, etc.). Distinguish between changes noticeable to end-users (e.g., new features, bug fixes in user-facing behavior) and internal changes (e.g., developer tools, refactors, documentation). Use 'feat' or 'fix' only for changes that are noticeable to the end-user. For internal code changes, enhancements to development workflows, or non-user-facing improvements that benefit developers but not end-users, use types like 'chore', 'refactor', 'docs', or similar.
+
      Choose the most appropriate type and scope based on the changes. Make the message clear, professional, and informative for future readers (including changelogs and release notes).
-
-     Note: Since this is a CLI tool (not a library), 'feat' should only be used for changes that affect the CLI interface (new commands, options) or the behavior of CLI output. Internal code changes or new functionality that doesn't change user-facing CLI behavior should use type 'chore', 'refactor', 'docs', or similar.
-
-     Clarification: Enhancements to opencode's internal commands (like this one) that improve development workflow but don't affect the project's end-user CLI interface should use type 'chore', 'refactor', 'docs', or similar, not 'feat'.
 
    - Commit the staged changes with the crafted message using `git commit -m "<message>"` (include body and footer in the message if needed, using newlines).
 
