@@ -119,6 +119,8 @@ Use Biome for formatting and linting. Run `bun run check` before committing.
 - `beforeEach`/`afterEach` for temporary directory setup/cleanup
 - Descriptive test names describing the behavior
 - Exact assertions with `toEqual()`
+- Use `toMatchSnapshot()` for complex output verification (e.g., MD content)
+- Update snapshots with `bun test --update-snapshots`
 - Test both success and error paths
 - Mock external dependencies when necessary
 - Test CLI arguments via direct function calls
