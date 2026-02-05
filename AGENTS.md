@@ -49,7 +49,7 @@ This document provides essential information for AI coding agents working on the
 - Use ES6 import syntax: `import { foo } from 'bar'`
 - Group imports: Node.js built-ins (prefixed with `node:`), third-party dependencies, local project files
 - Prefer named imports over default imports
-- For JSON imports: `import pkg from './package.json' assert { type: 'json' };`
+- For JSON imports: `import pkg from './package.json' with { type: 'json' };`
 - Avoid relative imports with `../`; use absolute paths from project root
 
 ### Formatting

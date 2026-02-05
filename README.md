@@ -143,60 +143,7 @@ This project uses Bun for runtime, TypeScript for type safety, and follows the g
 
 ## Changelog
 
-### v1.7.0
-- Added explicit HTML anchors (`<a id="..."></a>`) before all headings for guaranteed compatibility across platforms that don't auto-generate heading IDs, maximum control over anchor names, and stable links.
-
-### v1.6.3
-- Enhanced safety: Automatically exclude common binary file extensions (PNG, JPEG, PDF, archives, executables, etc.) when merging to Markdown to prevent corruption.
-- Added `--ignore` CLI option: Allow additional glob patterns to ignore (e.g., `*.log`, `temp/**`).
-- Minor clean-ups: Improved variable naming and code consistency.
-- Added YouTube video link in README demonstrating use case for AI discussions.
-
-### v1.6.2
-- Updated AGENTS.md with revised coding guidelines.
-- Added '..' links in subdirectory file trees for navigation to parent directories.
-
-### v1.6.1
-- Added instructions for running flatten-tool directly with npx and bunx.
-
-### v1.6.0
-- Perfect GitHub compatibility: anchors now exactly match GitHub Flavored Markdown auto-generation using github-slugger.
-- Cleaner directory headers: removed trailing `/` for better readability.
-- Precomputed anchors: ensures no mismatches even with slug collisions.
-- Removed unused treeify dependency.
-
-### v1.5.0
-- Improved navigation: project file tree is now a clickable nested Markdown list with links to each file's content section using standard markdown anchors.
-- Simplified file headers: removed custom anchors from section headers.
-
-### v1.4.0
-- Added project file tree to the beginning of merged Markdown output for better navigation.
-
-### v1.3.1
-- Fixed GIF exclusion pattern to work recursively in subdirectories.
-
-### v1.3.0
-- Excluded GIF files by default when merging to Markdown to prevent binary content corruption.
-
-### v1.2.3
-- Added demo.gif to docs/ and linked in README.md.
-
-### v1.2.2
-- Added `setMaxListeners(0)` on WriteStream in Markdown merging to silence listener warnings when processing many files.
-
-### v1.2.1
-- Fixed memory leak warnings in Markdown merging by refactoring to use `pipeline` and `finished` from `node:stream/promises`.
-
-### v1.2.0
-- Implemented streaming for Markdown merging to improve memory efficiency for large files/directories.
-- Updated documentation and coding guidelines.
-
-### v1.1.0
-- Made source argument optional (defaults to current directory).
-- Improved CLI defaults and options.
-
-### v1.0.0
-- Initial release with Markdown merging and directory flattening capabilities.
+See [CHANGELOG.md](CHANGELOG.md) for a full list of changes.
 
 ## License
 
