@@ -1,4 +1,4 @@
-import { readdir, rmdir } from 'node:fs/promises';
+import { readdir, rmdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export function escapePathComponent(component: string): string {
@@ -18,5 +18,23 @@ export async function removeEmptyDirs(dir: string, root?: string): Promise<void>
     } catch {
       // Not empty, skip
     }
+  }
+}
+
+export async function validateTargetPath(absTarget: string, overwrite: boolean): Promise<void> {
+  let targetExists = false;
+  try {
+    await stat(absTarget);
+    targetExists = true;
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'code' in err && err.code !== 'ENOENT') throw err;
+  }
+
+  if (targetExists && !overwrite) {
+    throw new Error(`Target file "${absTarget}" already exists. Use --overwrite to force.`);
+  }
+
+  if (targetExists) {
+    console.warn(`Overwriting existing file: ${absTarget}`);
   }
 }
