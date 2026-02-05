@@ -7,12 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Use globby ignore option for ignore patterns
+- Enhance command to create multiple high-quality commits
+- Split test suite to separate concerns
+
+### Fixed
+- Ignore destination file when it exists in source directory
+
 ### Documentation
+- Refine commit message guidelines for generality
+- Clarify commit message guidelines for internal changes
+- Add clarification for internal enhancements commit type
+- Add note about feat usage in CLI tools
+- Update changelog with unreleased changes
 - Clarify release strategy in update-changelog command
 - Add changelog update slash command for OpenCode
 
-### Changed
-- Split test suite to separate concerns
+### Chore
+- Add flattened.md to .gitignore
+- Add commit command for conventional commits
+- Add changelog update slash command for OpenCode
 
 ## [1.8.1] - 2026-02-05
 
