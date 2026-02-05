@@ -6,6 +6,7 @@ out
 dist
 *.tgz
 result
+flattened.md
 
 # code coverage
 coverage
