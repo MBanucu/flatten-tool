@@ -65,13 +65,14 @@ export async function flattenDirectory(
     defaultIgnores.push(`**/*.{${binaryExts.join(',')}}`);
   }
 
+  const ignoreList = [...defaultIgnores, absTarget];
   const files = await globby(['**', ...extraIgnores], {
     cwd: absSource,
     gitignore: options.respectGitignore,
     absolute: true,
     dot: true,
     onlyFiles: true,
-    ignore: defaultIgnores,
+    ignore: ignoreList,
   });
 
   if (options.flattenToDirectory) {

@@ -219,3 +219,24 @@ test('excludes multiple binary types by default', async () => {
   expect(mdContent).not.toContain('doc.pdf'); // Excluded
   expect(mdContent).not.toContain('archive.zip'); // Excluded
 });
+
+test('ignores the destination file when it exists in source directory', async () => {
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'output.md'), 'existing md content');
+
+  const mdTargetInSource = join(sourceDir, 'output.md');
+
+  await flattenDirectory(sourceDir, mdTargetInSource, {
+    move: false,
+    overwrite: true,
+    ignorePatterns: [],
+    respectGitignore: true,
+    flattenToDirectory: false,
+  });
+
+  const mdContent = await readFile(mdTargetInSource, 'utf8');
+  expect(mdContent).toContain('file1.txt');
+  expect(mdContent).toContain('content1');
+  expect(mdContent).not.toContain('existing md content');
+  expect(mdContent).not.toContain('output.md');
+});
