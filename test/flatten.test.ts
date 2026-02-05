@@ -214,8 +214,7 @@ test('merges files into a single md file', async () => {
   }); // copy, mergeMd
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt\n\n```txt\ncontent1\n```');
-  expect(mdContent).toContain('# subdir/file2.js\n\n```js\ncontent2\n```');
+  expect(mdContent).toMatchSnapshot();
 
   // Source files still exist since copy
   expect(await readdir(sourceDir)).toContain('file1.txt');
@@ -236,8 +235,7 @@ test('merges files into md with move', async () => {
   }); // move, mergeMd
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt\n\n```txt\ncontent1\n```');
-  expect(mdContent).toContain('# subdir/file2.js\n\n```js\ncontent2\n```');
+  expect(mdContent).toMatchSnapshot();
 
   // Source files deleted, subdir empty and removed
   const sourceFiles = await readdir(sourceDir);
@@ -296,8 +294,7 @@ test('ignores files when merging to md', async () => {
   });
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt');
-  expect(mdContent).toContain('# .gitignore');
+  expect(mdContent).toMatchSnapshot();
 });
 
 test('excludes gif files by default when merging to md', async () => {
@@ -314,9 +311,7 @@ test('excludes gif files by default when merging to md', async () => {
   }); // merge to md
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt');
-  expect(mdContent).not.toContain('## image.gif');
-  expect(mdContent).not.toContain('fake gif content');
+  expect(mdContent).toMatchSnapshot();
 });
 
 test('includes gif files when flattening to directory', async () => {
@@ -351,8 +346,5 @@ test('excludes gif files in subdirs by default when merging to md', async () => 
   }); // merge to md
 
   const mdContent = await readFile(mdTarget, 'utf8');
-  expect(mdContent).toContain('# file1.txt');
-  expect(mdContent).toContain('# subdir/file2.js');
-  expect(mdContent).not.toContain('## subdir/image.gif');
-  expect(mdContent).not.toContain('fake gif content');
+  expect(mdContent).toMatchSnapshot();
 });

@@ -1,0 +1,150 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`merges files into a single md file 1`] = `
+"<a id="project-file-tree"></a>
+# Project File Tree
+
+File Tree
+
+- [subdir](#subdir)
+  - [subdir/file2.js](#subdirfile2js)
+- [file1.txt](#file1txt)
+
+<a id="subdir"></a>
+# subdir
+
+File Tree
+
+- [..](#project-file-tree)
+- [subdir/file2.js](#subdirfile2js)
+
+<a id="subdirfile2js"></a>
+# subdir/file2.js
+
+\`\`\`js
+content2
+\`\`\`
+
+<a id="file1txt"></a>
+# file1.txt
+
+\`\`\`txt
+content1
+\`\`\`
+
+"
+`;
+
+exports[`merges files into md with move 1`] = `
+"<a id="project-file-tree"></a>
+# Project File Tree
+
+File Tree
+
+- [subdir](#subdir)
+  - [subdir/file2.js](#subdirfile2js)
+- [file1.txt](#file1txt)
+
+<a id="subdir"></a>
+# subdir
+
+File Tree
+
+- [..](#project-file-tree)
+- [subdir/file2.js](#subdirfile2js)
+
+<a id="subdirfile2js"></a>
+# subdir/file2.js
+
+\`\`\`js
+content2
+\`\`\`
+
+<a id="file1txt"></a>
+# file1.txt
+
+\`\`\`txt
+content1
+\`\`\`
+
+"
+`;
+
+exports[`ignores files when merging to md 1`] = `
+"<a id="project-file-tree"></a>
+# Project File Tree
+
+File Tree
+
+- [.gitignore](#gitignore)
+- [file1.txt](#file1txt)
+
+<a id="gitignore"></a>
+# .gitignore
+
+\`\`\`text
+ignore.txt
+\`\`\`
+
+<a id="file1txt"></a>
+# file1.txt
+
+\`\`\`txt
+content1
+\`\`\`
+
+"
+`;
+
+exports[`excludes gif files by default when merging to md 1`] = `
+"<a id="project-file-tree"></a>
+# Project File Tree
+
+File Tree
+
+- [file1.txt](#file1txt)
+
+<a id="file1txt"></a>
+# file1.txt
+
+\`\`\`txt
+content1
+\`\`\`
+
+"
+`;
+
+exports[`excludes gif files in subdirs by default when merging to md 1`] = `
+"<a id="project-file-tree"></a>
+# Project File Tree
+
+File Tree
+
+- [subdir](#subdir)
+  - [subdir/file2.js](#subdirfile2js)
+- [file1.txt](#file1txt)
+
+<a id="subdir"></a>
+# subdir
+
+File Tree
+
+- [..](#project-file-tree)
+- [subdir/file2.js](#subdirfile2js)
+
+<a id="subdirfile2js"></a>
+# subdir/file2.js
+
+\`\`\`js
+content2
+\`\`\`
+
+<a id="file1txt"></a>
+# file1.txt
+
+\`\`\`txt
+content1
+\`\`\`
+
+"
+`;
