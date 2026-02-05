@@ -26,7 +26,9 @@ Please perform the following steps carefully to create a high-quality git commit
    - Optional body: explain **what** and **why** (not how), wrap at 72 characters
    - Optional footer: for BREAKING CHANGE, references to issues, etc.
 
-   Choose the most appropriate type and scope based on the changes. Make the message clear, professional, and informative for future readers (including changelogs and release notes).
+    Choose the most appropriate type and scope based on the changes. Make the message clear, professional, and informative for future readers (including changelogs and release notes).
+
+    Note: Since this is a CLI tool (not a library), 'feat' should only be used for changes that affect the CLI interface (new commands, options) or the behavior of CLI output. Internal code changes or new functionality that doesn't change user-facing CLI behavior should use 'chore' or 'refactor'.
 
 5. If there are no staged changes:
    - Inform the user that nothing is staged.
