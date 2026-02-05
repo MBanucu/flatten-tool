@@ -1,7 +1,7 @@
-import { createReadStream, createWriteStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
+import { readFile, stat } from 'node:fs/promises';
 import { extname, relative } from 'node:path';
-import { finished, pipeline } from 'node:stream/promises';
+import { finished } from 'node:stream/promises';
 import GithubSlugger from 'github-slugger';
 import { renderMarkdownTree } from './mdRenderer.ts';
 import {
@@ -107,6 +107,14 @@ export async function mergeToMarkdown(
   const writeStream = createWriteStream(absTarget);
   writeStream.setMaxListeners(0);
 
+  function calculateTicks(content: string, isMd: boolean): string {
+    if (!isMd) return '```';
+    const backtickMatches = content.match(/`+/g);
+    const maxTicks = backtickMatches ? Math.max(...backtickMatches.map((m) => m.length)) : 0;
+    const requiredTicks = Math.max(3, maxTicks + 1);
+    return '`'.repeat(requiredTicks);
+  }
+
   async function renderFile(
     fileSection: TreeFile<string>,
     writeStream: import('node:fs').WriteStream
@@ -116,13 +124,12 @@ export async function mergeToMarkdown(
     const ext = extname(fileSection.relPath).slice(1) || 'text';
     const lang = ext;
     const isMd = ['md', 'markdown'].includes(ext.toLowerCase());
-    const ticks = isMd ? '````' : '```';
+
+    const content = await readFile(fileSection.srcPath, 'utf8');
+    const ticks = calculateTicks(content, isMd);
 
     writeStream.write(`${ticks}${lang}\n`);
-
-    const readStream = createReadStream(fileSection.srcPath, { encoding: 'utf8' });
-    await pipeline(readStream, writeStream, { end: false });
-
+    writeStream.write(content);
     writeStream.write(`\n${ticks}\n\n`);
   }
 

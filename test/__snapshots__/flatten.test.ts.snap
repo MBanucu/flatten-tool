@@ -35,6 +35,52 @@ content1
 "
 `;
 
+exports[`handles md files with nested code blocks correctly 1`] = `
+"<a id="project-file-tree"></a>
+# Project File Tree
+
+File Tree
+
+- [subdir](#subdir)
+  - [subdir/test.md](#subdirtestmd)
+- [file1.txt](#file1txt)
+
+<a id="subdir"></a>
+# subdir
+
+File Tree
+
+- [..](#project-file-tree)
+- [subdir/test.md](#subdirtestmd)
+
+<a id="subdirtestmd"></a>
+# subdir/test.md
+
+\`\`\`\`\`\`md
+# Test Markdown
+
+\`\`\`
+normal code
+\`\`\`
+
+\`\`\`\`\`
+code with 5 ticks
+\`\`\`\`\`
+
+Some text.
+
+\`\`\`\`\`\`
+
+<a id="file1txt"></a>
+# file1.txt
+
+\`\`\`txt
+content1
+\`\`\`
+
+"
+`;
+
 exports[`merges files into md with move 1`] = `
 "<a id="project-file-tree"></a>
 # Project File Tree

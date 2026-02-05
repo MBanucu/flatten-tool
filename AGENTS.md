@@ -18,10 +18,11 @@ Version: 1.7.0
 - All tests: `bun test`
 - Watch mode: `bun test --watch`
 - Specific file: `bun test test/flatten.test.ts`
-- Single test: `bun test -t "test name"`
+- Single test: `bun test -t "exact test name"` (e.g., `bun test -t "handles md files with nested code blocks correctly"`)
 - Coverage: `bun test --coverage`
 - Debug: `bun test --inspect`
-- Pattern: `bun test -t "pattern"`
+- Pattern: `bun test -t "pattern"` (matches test names containing the pattern)
+- Update snapshots: `bun test --update-snapshots`
 
 ### Linting/Formatting
 - Formatting: `bun run format`
@@ -52,7 +53,7 @@ Version: 1.7.0
 
 ### Imports
 - Use ES6 import syntax: `import { foo } from 'bar'`
-- Group imports in this order: Node.js built-ins (prefixed with `node:`), third-party dependencies, local project files
+- Group imports: Node.js built-ins (prefixed with `node:`), third-party dependencies, local project files
 - Prefer named imports over default imports
 - For JSON imports: `import pkg from './package.json' assert { type: 'json' };`
 - Avoid relative imports with `../`; use absolute paths from project root

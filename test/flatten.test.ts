@@ -220,6 +220,38 @@ test('merges files into a single md file', async () => {
   expect(await readdir(sourceDir)).toContain('file1.txt');
 });
 
+test('handles md files with nested code blocks correctly', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(
+    join(sourceDir, 'subdir', 'test.md'),
+    `# Test Markdown
+
+\`\`\`
+normal code
+\`\`\`
+
+\`\`\`\`\`
+code with 5 ticks
+\`\`\`\`\`
+
+Some text.
+`
+  );
+
+  const mdTarget = join(tempDir, 'output.md');
+  await flattenDirectory(sourceDir, mdTarget, {
+    move: false,
+    overwrite: false,
+    ignorePatterns: [],
+    respectGitignore: true,
+    flattenToDirectory: false,
+  }); // merge to md
+
+  const mdContent = await readFile(mdTarget, 'utf8');
+  expect(mdContent).toMatchSnapshot();
+});
+
 test('merges files into md with move', async () => {
   await mkdir(join(sourceDir, 'subdir'));
   await writeFile(join(sourceDir, 'file1.txt'), 'content1');
