@@ -5,13 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.8.1] - 2026-02-05
 
 ### Changed
-- Split mergeToMarkdown into focused functions
-- Remove unused pathMap variable in mergeToMarkdown
+- Refactor `collectSections` function to eliminate side effects, improving functional purity and immutability
+- Fix bug where children keys incorrectly used full `relPath` instead of immediate child name
 
 ### Documentation
+- Create CHANGELOG.md and update documentation
 - Streamline AGENTS.md for coding guidelines
 
 ## [1.8.0] - 2026-02-05
