@@ -1,44 +1,31 @@
-import type { TreeNode } from './treeBuilder.ts';
+import type { TreeDescendantDirectory, TreeRootDirectory } from './treeBuilder.ts';
 
 export function renderMarkdownTree(
-  node: TreeNode,
+  node: TreeRootDirectory<string> | TreeDescendantDirectory<string>,
   depth: number = 0,
-  prefix: string = '',
-  anchorMap: Map<string, string>,
-  parentPath: string | null
-): string {
-  let result = '';
+  writeStream: import('node:fs').WriteStream
+) {
   const indent = '  '.repeat(depth);
 
-  if (parentPath !== null && depth === 0) {
-    const parentAnchor = anchorMap.get(parentPath) ?? '';
-    result += `${indent}- [..](#${parentAnchor})\n`;
+  if (node.familyType === 'descendant' && depth === 0) {
+    const parentAnchor = node.parent.slug ?? '';
+    writeStream.write(`${indent}- [..](#${parentAnchor})\n`);
   }
 
-  const entryIndent = '  '.repeat(depth);
+  const entries = Object.entries(node.children);
 
-  const entries: [string, TreeNode | string][] = Object.entries(node);
-
-  entries.sort(([a], [b]) => {
-    const aDir = a.endsWith('/');
-    const bDir = b.endsWith('/');
+  entries.sort(([aKey, aValue], [bKey, bValue]) => {
+    const aDir = aValue.type === 'directory';
+    const bDir = bValue.type === 'directory';
     if (aDir !== bDir) return aDir ? -1 : 1;
-    return a.toLowerCase().localeCompare(b.toLowerCase());
+    return aKey.toLowerCase().localeCompare(bKey.toLowerCase());
   });
 
-  for (const [key, value] of entries) {
-    const isDir = key.endsWith('/');
-    const name = isDir ? key.slice(0, -1) : key;
-    const display = isDir ? `${name}/` : name;
-    const pathHere = prefix ? `${prefix}/${name}` : name;
-    const anchor = anchorMap.get(pathHere) ?? '';
+  for (const [pathToChild, child] of entries) {
+    writeStream.write(`${indent}- [${pathToChild}](#${child.slug})\n`);
 
-    result += `${entryIndent}- [${display}](#${anchor})\n`;
-
-    if (isDir) {
-      result += renderMarkdownTree(value as TreeNode, depth + 1, pathHere, anchorMap, prefix);
+    if (child.type === 'directory') {
+      renderMarkdownTree(child, depth + 1, writeStream);
     }
   }
-
-  return result;
 }

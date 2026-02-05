@@ -14,7 +14,7 @@
     }
   },
   "files": {
-    "includes": ["**/*", "!.devenv", "!.direnv", "!node_modules", "!result"],
+    "includes": ["**", "!.devenv", "!.direnv", "!node_modules", "!result"],
     "ignoreUnknown": true
   }
 }
