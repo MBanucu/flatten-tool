@@ -42,8 +42,8 @@ test('flattens a simple nested directory', async () => {
   try {
     await stat(join(sourceDir, 'subdir'));
     expect(false).toBe(true); // Should not exist
-  } catch (e) {
-    expect(e.code).toBe('ENOENT');
+  } catch (e: unknown) {
+    expect((e as { code?: string }).code).toBe('ENOENT');
   }
 
   // Check source has only file1.txt (but wait, file1.txt was moved)
