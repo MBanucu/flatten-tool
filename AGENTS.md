@@ -9,6 +9,7 @@ This document provides essential information for AI coding agents working on the
 - Bun 1.3+, TypeScript peer dependency
 
 - devenv (recommended for development environment)
+- To check if in a devenv shell: run `env | grep -i devenv`
 
 ### Testing
 - All tests: `bun test`
@@ -32,7 +33,7 @@ This document provides essential information for AI coding agents working on the
 
 ### Devenv Scripts
 
-When using devenv, the following scripts are available:
+When using devenv, the following scripts are available. Run them directly as commands in the devenv shell (e.g., run `lint` to run linting). Note: If your shell session is already within the devenv environment, try running these scripts directly.
 
 - unittest: Run all tests
 
