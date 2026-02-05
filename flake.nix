@@ -35,12 +35,6 @@
           '';
         };
         packages.default = self.packages.${system}.flatten-tool;
-        devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            bun
-            biome
-          ];
-        };
       }
     );
 }
