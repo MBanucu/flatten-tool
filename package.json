@@ -8,11 +8,10 @@
     "flatten-tool": "index.ts"
   },
   "scripts": {
-    "test": "bun test",
-    "format": "biome format --write .",
+    "unittest": "bun test",
     "lint": "biome lint .",
-    "check": "biome check --write .",
-    "postinstall": "bun nix/postInstall.js"
+    "format": "biome format --write .",
+    "check": "biome check --write ."
   },
   "engines": {
     "bun": ">=1.1.0"

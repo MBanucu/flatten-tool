@@ -8,6 +8,8 @@ This document provides essential information for AI coding agents working on the
 - `bun install`
 - Bun 1.3+, TypeScript peer dependency
 
+- devenv (recommended for development environment)
+
 ### Testing
 - All tests: `bun test`
 - Watch mode: `bun test --watch`
@@ -27,6 +29,18 @@ This document provides essential information for AI coding agents working on the
 - Direct: `bun run index.ts [args]`
 - Help: `bun run index.ts --help`
 - Version: `bun run index.ts --version`
+
+### Devenv Scripts
+
+When using devenv, the following scripts are available:
+
+- unittest: Run all tests
+
+- lint: Run lint
+
+- format: Format
+
+- check: Lint and format
 
 ## Code Style Guidelines
 
@@ -160,6 +174,8 @@ No Cursor or Copilot rules defined. Follow this AGENTS.md.
 ## Agent Notes
 
 - Always run tests before committing changes
+
+- Use devenv scripts (unittest, lint, format, check) when available instead of bun run commands
 - Follow existing code patterns and conventions
 - Maintain backward compatibility unless explicitly changing API
 - Update AGENTS.md when coding guidelines evolve

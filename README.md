@@ -30,6 +30,24 @@ bunx flatten-tool [args]
 
 ### For Development
 
+#### With devenv (recommended)
+
+Clone the repository and enter the development environment:
+
+```bash
+git clone https://github.com/MBanucu/flatten-tool.git
+cd flatten-tool
+devenv shell
+```
+
+Inside the devenv shell, dependencies are managed automatically. Run the tool with:
+
+```bash
+bun run index.ts [args]
+```
+
+#### Without devenv
+
 Clone the repository and install dependencies:
 
 ```bash
@@ -122,7 +140,8 @@ flatten-tool /path/to/source output.md --move --overwrite
 Run all tests:
 
 ```bash
-bun test
+unittest  # If using devenv
+bun unittest  # Otherwise
 ```
 
 Run tests in watch mode:
@@ -140,6 +159,15 @@ bun test -t "flattens a simple nested directory"
 ## Development
 
 This project uses Bun for runtime, TypeScript for type safety, and follows the guidelines in `AGENTS.md` for coding standards.
+
+### Development Scripts (devenv)
+
+When using devenv, the following scripts are available:
+
+- `check`: Format + lint in one go
+- `format`: Format code with Biome
+- `lint`: Run Biome lint
+- `unittest`: Run all tests with Bun
 
 ## Changelog
 
