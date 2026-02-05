@@ -43,6 +43,7 @@ Version: 1.7.0
 
 ### File Structure
 - `index.ts`: Main CLI entry point, `flattenDirectory` function, and helper utilities
+- `src/`: Core source files (treeBuilder.ts, mdRenderer.ts, mergeToMarkdown.ts, utils.ts, flattenToDirectory.ts, flatten.ts)
 - `test/*.test.ts`: Test files using Bun's test framework
 - `package.json`: Dependencies and scripts
 - `README.md`: User documentation
@@ -51,22 +52,10 @@ Version: 1.7.0
 
 ### Imports
 - Use ES6 import syntax: `import { foo } from 'bar'`
-- Group imports in this order:
-  1. Node.js built-ins (prefixed with `node:`)
-  2. Third-party dependencies
-  3. Local project files
-- Prefer named imports over default imports when possible
+- Group imports in this order: Node.js built-ins (prefixed with `node:`), third-party dependencies, local project files
+- Prefer named imports over default imports
 - For JSON imports: `import pkg from './package.json' assert { type: 'json' };`
-- Avoid relative imports with `../`; use absolute paths from project root if needed
-
-Example:
-```ts
-import { readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import yargs from 'yargs';
-import GithubSlugger from 'github-slugger';
-import { buildTreeObject } from './helpers.ts';
-```
+- Avoid relative imports with `../`; use absolute paths from project root
 
 ### Formatting
 - 2 spaces for indentation (no tabs)
@@ -75,37 +64,25 @@ import { buildTreeObject } from './helpers.ts';
 - Single quotes for strings
 - Semicolons always required
 - No trailing whitespace
-- Blank lines between logical blocks of code
-- Consistent spacing around operators and keywords
+- Blank lines between logical blocks
 
 Use Biome for formatting and linting. Run `bun run check` before committing.
 
 ### Types
 - Explicit types for all function parameters and return values
 - Use interfaces for object shapes instead of type aliases
-- Avoid `any` type; use `unknown` if truly necessary
+- Avoid `any`; use `unknown` if necessary
 - JSDoc comments for public APIs with `@param` and `@returns`
-- Leverage TypeScript's type inference where possible
+- Leverage TypeScript's type inference
 - Use union types for multiple possible values
-
-Example:
-```ts
-interface FileEntry {
-  srcPath: string;
-  relPath: string;
-}
-
-function processFiles(files: FileEntry[]): string[] {
-  return files.map(entry => entry.relPath);
-}
-```
+- Define specific interfaces for tree nodes (TreeFile, TreeDirectory, etc.) with family types, slugs, and parent references
 
 ### Naming Conventions
 - camelCase: variables, functions, methods
 - PascalCase: classes, interfaces, type names
 - UPPER_SNAKE_CASE: constants and enum values
 - Boolean prefixes: `is`, `has`, `can`, `should`
-- File names: kebab-case for non-TypeScript files, camelCase for TypeScript files
+- File names: kebab-case for non-TypeScript, camelCase for TypeScript
 - Avoid abbreviations unless widely understood
 
 ### Functions
@@ -115,23 +92,14 @@ function processFiles(files: FileEntry[]): string[] {
 - Destructuring parameters for clarity
 - Default parameters for optional values
 - Early returns to reduce nesting
-- Keep functions under 50 lines; break into smaller functions if needed
-- Single responsibility principle
-
-Example:
-```ts
-async function readAndProcessFile(filePath: string): Promise<string> {
-  const content = await readFile(filePath, 'utf8');
-  return content.trim().toUpperCase();
-}
-```
+- Keep functions under 50 lines; single responsibility principle
 
 ### Error Handling
 - Use try-catch for synchronous operations
 - Descriptive error messages with context
 - Validate inputs at function entry points
 - Graceful handling of filesystem errors (ENOENT, EACCES, etc.)
-- Avoid throwing generic Error; use specific error types when appropriate
+- Avoid generic Error; use specific error types
 - Log errors to stderr, not stdout
 
 ### Async Code
@@ -143,34 +111,17 @@ async function readAndProcessFile(filePath: string): Promise<string> {
 ### CLI and User Interface
 - yargs for command-line argument parsing
 - Standard options: --help, --version
-- Error messages to stderr
-- Success messages to stdout
-- Consistent exit codes (0 for success, 1 for errors)
+- Error messages to stderr, success to stdout
+- Consistent exit codes (0 success, 1 errors)
 
 ### Testing
 - Bun's test framework (`bun:test`)
 - `beforeEach`/`afterEach` for temporary directory setup/cleanup
 - Descriptive test names describing the behavior
-- Exact assertions with `toEqual()` rather than loose equality
+- Exact assertions with `toEqual()`
 - Test both success and error paths
 - Mock external dependencies when necessary
 - Test CLI arguments via direct function calls
-
-Example test structure:
-```ts
-test('flattens directory with nested files', async () => {
-  // Setup
-  await mkdir(join(sourceDir, 'subdir'));
-  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
-
-  // Execute
-  await flattenDirectory(sourceDir, targetFile, false, true, [], true, false);
-
-  // Assert
-  const content = await readFile(targetFile, 'utf8');
-  expect(content).toContain('# file1.txt');
-});
-```
 
 ### Security
 - Validate all user inputs (paths, arguments)
@@ -190,7 +141,7 @@ test('flattens directory with nested files', async () => {
 - IMPORTANT: DO NOT ADD ***ANY*** COMMENTS unless explicitly requested by the user
 - Self-documenting code preferred
 - JSDoc only for complex public APIs
-- Avoid inline comments; use descriptive variable/function names
+- Avoid inline comments; use descriptive names
 
 ### Documentation
 - JSDoc for exported functions
@@ -203,7 +154,7 @@ test('flattens directory with nested files', async () => {
 - Feature branches for new work
 - Squash commits when merging to main
 - Descriptive commit messages explaining the change
-- Run Biome check before pushing changes.
+- Run Biome check before pushing changes
 
 ### Nix
 - Simple flake.nix for reproducible builds
@@ -230,5 +181,5 @@ No Cursor or Copilot rules defined. Follow this AGENTS.md.
 - When in doubt, match the style of surrounding code
 - Prefer small, incremental changes over large rewrites
 
-Last updated: 2026-02-04</content>
+Last updated: 2026-02-05</content>
 <parameter name="filePath">/home/michi/dev/flatten-tool/AGENTS.md
