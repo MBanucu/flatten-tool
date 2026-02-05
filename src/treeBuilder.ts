@@ -1,10 +1,12 @@
 import GithubSlugger from 'github-slugger';
+import { compareChildren } from './utils';
 
 export type SlugType = string | undefined;
 
 export interface TreeEntry<T extends SlugType> {
   type: 'file' | 'directory';
   relPath: string;
+  name: string;
   slug: T;
 }
 
@@ -31,11 +33,11 @@ export interface TreeDirectory<T extends SlugType> extends TreeEntry<T> {
   children: TreeChildren<T>;
 }
 
-export interface TreeRootDirectory<T extends SlugType> extends TreeDirectory<T>, TreeRoot {}
+export interface TreeRootDirectory<T extends SlugType> extends TreeDirectory<T>, TreeRoot { }
 
 export interface TreeDescendantDirectory<T extends SlugType>
   extends TreeDirectory<T>,
-    TreeDescendant<T> {}
+  TreeDescendant<T> { }
 
 export interface TreeChildren<T extends SlugType> {
   [key: string]: TreeFile<T> | TreeDescendantDirectory<T>;
@@ -48,6 +50,7 @@ export type Section<T extends SlugType = string> =
 
 export function buildTreeObject(paths: { relPath: string; srcPath: string }[]) {
   const tree: TreeRootDirectory<undefined> = {
+    name: 'Project File Tree',
     children: {},
     type: 'directory',
     familyType: 'root',
@@ -66,6 +69,7 @@ export function buildTreeObject(paths: { relPath: string; srcPath: string }[]) {
         // Directory
         if (children[part] === undefined) {
           children[part] = {
+            name: part,
             relPath: currentParts.join('/'),
             type: 'directory',
             familyType: 'descendant',
@@ -81,6 +85,7 @@ export function buildTreeObject(paths: { relPath: string; srcPath: string }[]) {
       } else {
         // File
         children[part] = {
+          name: part,
           relPath: path.relPath,
           type: 'file',
           familyType: 'descendant',
@@ -94,63 +99,82 @@ export function buildTreeObject(paths: { relPath: string; srcPath: string }[]) {
   return tree;
 }
 
-export function collectSections(
-  treeNode: TreeDirectory<undefined>,
-  parentDirWithSlug: TreeDirectory<string>,
-  sections: Section[],
-  anchorSlugger: GithubSlugger
-): void {
-  const dirs: TreeDescendantDirectory<undefined>[] = [];
-  const files: TreeFile<undefined>[] = [];
+export class SectionsCollector {
+  private anchorSlugger: GithubSlugger = new GithubSlugger();
 
-  for (const [_key, value] of Object.entries(treeNode.children)) {
-    if (value.type === 'directory') {
-      dirs.push(value);
-    } else {
-      files.push(value);
-    }
-  }
-
-  dirs.sort((a, b) => a.relPath.toLowerCase().localeCompare(b.relPath.toLowerCase()));
-  files.sort((a, b) => a.relPath.toLowerCase().localeCompare(b.relPath.toLowerCase()));
-
-  for (const dir of dirs) {
-    const childDirWithSlug: TreeDescendantDirectory<string> = {
-      ...dir,
+  private createChild(childWithoutSlugDir: TreeDescendantDirectory<undefined>, parent: TreeDirectory<string>) {
+    const child: TreeDescendantDirectory<string> = {
+      ...childWithoutSlugDir,
       children: {},
-      parent: parentDirWithSlug,
-      slug: anchorSlugger.slug(dir.relPath),
+      parent,
+      slug: this.anchorSlugger.slug(childWithoutSlugDir.relPath),
     };
-    parentDirWithSlug.children[dir.relPath] = childDirWithSlug;
-    sections.push(childDirWithSlug);
-    collectSections(dir, childDirWithSlug, sections, anchorSlugger);
+
+    const { children: subChildren, sections: subSections } = this.collectSections(
+      childWithoutSlugDir,
+      child,
+    );
+    child.children = subChildren;
+
+    return { child, subSections }
   }
 
-  for (const file of files) {
-    const childFileWithSlug: TreeFile<string> = {
-      ...file,
-      parent: parentDirWithSlug,
-      slug: anchorSlugger.slug(file.relPath),
-    };
-    parentDirWithSlug.children[file.relPath] = childFileWithSlug;
-    sections.push(childFileWithSlug);
+  private collectSections(
+    parentWithoutSlug: TreeDirectory<undefined>,
+    parent: TreeDirectory<string>,
+  ): { children: TreeChildren<string>; sections: Section[] } {
+
+    const children: TreeChildren<string> = {};
+    const sections: Section[] = [];
+
+    const childrenWithoutSlug = Object.entries(parentWithoutSlug.children);
+    childrenWithoutSlug.sort(compareChildren);
+
+    for (const [childWithoutSlugName, childWithoutSlug] of childrenWithoutSlug) {
+      if (childWithoutSlug.type === 'directory') {
+        const { child, subSections } = this.createChild(childWithoutSlug, parent);
+        
+        children[childWithoutSlugName] = child;
+        sections.push(child);
+        sections.push(...subSections);
+
+      } else {
+        const childWithoutSlugFile = childWithoutSlug;
+
+        const child: TreeFile<string> = {
+          ...childWithoutSlugFile,
+          slug: this.anchorSlugger.slug(childWithoutSlugFile.relPath),
+          parent,
+        };
+        sections.push(child);
+        children[childWithoutSlugName] = child;
+      }
+    }
+
+    return { children, sections };
   }
-}
 
-export function buildTreeWithSlugs(treeObj: TreeRootDirectory<undefined>): {
-  rootDirWithSlug: TreeRootDirectory<string>;
-  sections: Section[];
-} {
-  const sections: Section[] = [];
-  const anchorSlugger = new GithubSlugger();
+  public buildTreeWithSlugs(rootWithoutSlug: TreeRootDirectory<undefined>): {
+    root: TreeRootDirectory<string>;
+    sections: Section[];
+  } {
+    const sections: Section[] = [];
 
-  const rootDirWithSlug: TreeRootDirectory<string> = {
-    ...treeObj,
-    children: {},
-    slug: anchorSlugger.slug('Project File Tree'),
-  };
-  sections.push(rootDirWithSlug);
-  collectSections(treeObj, rootDirWithSlug, sections, anchorSlugger);
+    const root: TreeRootDirectory<string> = {
+      ...rootWithoutSlug,
+      children: {},
+      slug: this.anchorSlugger.slug(rootWithoutSlug.name),
+    };
+    
+    const { children, sections: subSections } = this.collectSections(
+      rootWithoutSlug,
+      root,
+    );
 
-  return { rootDirWithSlug, sections };
+    root.children = children;
+    sections.push(root);
+    sections.push(...subSections);
+
+    return { root, sections };
+  }
 }

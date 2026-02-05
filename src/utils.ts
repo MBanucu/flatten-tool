@@ -1,5 +1,6 @@
 import { readdir, rmdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
+import { TreeFile, TreeDescendantDirectory, SlugType } from './treeBuilder';
 
 export function escapePathComponent(component: string): string {
   return component.replace(/_/g, '__');
@@ -37,4 +38,11 @@ export async function validateTargetPath(absTarget: string, overwrite: boolean):
   if (targetExists) {
     console.warn(`Overwriting existing file: ${absTarget}`);
   }
+}
+
+export function compareChildren(a: [string, TreeFile<SlugType> | TreeDescendantDirectory<SlugType>], b: [string, TreeFile<SlugType> | TreeDescendantDirectory<SlugType>]) {
+    const aDir = a[1].type === 'directory';
+    const bDir = b[1].type === 'directory';
+    if (aDir !== bDir) return aDir ? -1 : 1;
+    return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
 }

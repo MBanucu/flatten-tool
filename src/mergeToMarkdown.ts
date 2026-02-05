@@ -2,7 +2,7 @@ import { createWriteStream } from 'node:fs';
 import { relative } from 'node:path';
 import { finished } from 'node:stream/promises';
 import { renderSectionsToMarkdown } from './mdRenderer.ts';
-import { buildTreeObject, buildTreeWithSlugs } from './treeBuilder.ts';
+import { buildTreeObject, SectionsCollector } from './treeBuilder.ts';
 import { validateTargetPath } from './utils.ts';
 
 interface MergeOptions {
@@ -23,7 +23,7 @@ export async function mergeToMarkdown(
   }));
 
   const treeObj = buildTreeObject(fileEntries);
-  const { sections } = buildTreeWithSlugs(treeObj);
+  const { sections } = new SectionsCollector().buildTreeWithSlugs(treeObj);
 
   const writeStream = createWriteStream(absTarget);
   writeStream.setMaxListeners(0);

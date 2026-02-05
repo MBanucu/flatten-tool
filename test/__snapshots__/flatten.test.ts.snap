@@ -7,7 +7,7 @@ exports[`merges files into a single md file 1`] = `
 File Tree
 
 - [subdir](#subdir)
-  - [subdir/file2.js](#subdirfile2js)
+  - [file2.js](#subdirfile2js)
 - [file1.txt](#file1txt)
 
 <a id="subdir"></a>
@@ -16,7 +16,7 @@ File Tree
 File Tree
 
 - [..](#project-file-tree)
-- [subdir/file2.js](#subdirfile2js)
+- [file2.js](#subdirfile2js)
 
 <a id="subdirfile2js"></a>
 # subdir/file2.js
@@ -42,7 +42,7 @@ exports[`handles md files with nested code blocks correctly 1`] = `
 File Tree
 
 - [subdir](#subdir)
-  - [subdir/test.md](#subdirtestmd)
+  - [test.md](#subdirtestmd)
 - [file1.txt](#file1txt)
 
 <a id="subdir"></a>
@@ -51,7 +51,7 @@ File Tree
 File Tree
 
 - [..](#project-file-tree)
-- [subdir/test.md](#subdirtestmd)
+- [test.md](#subdirtestmd)
 
 <a id="subdirtestmd"></a>
 # subdir/test.md
@@ -88,7 +88,7 @@ exports[`merges files into md with move 1`] = `
 File Tree
 
 - [subdir](#subdir)
-  - [subdir/file2.js](#subdirfile2js)
+  - [file2.js](#subdirfile2js)
 - [file1.txt](#file1txt)
 
 <a id="subdir"></a>
@@ -97,7 +97,7 @@ File Tree
 File Tree
 
 - [..](#project-file-tree)
-- [subdir/file2.js](#subdirfile2js)
+- [file2.js](#subdirfile2js)
 
 <a id="subdirfile2js"></a>
 # subdir/file2.js
@@ -167,7 +167,7 @@ exports[`excludes gif files in subdirs by default when merging to md 1`] = `
 File Tree
 
 - [subdir](#subdir)
-  - [subdir/file2.js](#subdirfile2js)
+  - [file2.js](#subdirfile2js)
 - [file1.txt](#file1txt)
 
 <a id="subdir"></a>
@@ -176,7 +176,7 @@ File Tree
 File Tree
 
 - [..](#project-file-tree)
-- [subdir/file2.js](#subdirfile2js)
+- [file2.js](#subdirfile2js)
 
 <a id="subdirfile2js"></a>
 # subdir/file2.js

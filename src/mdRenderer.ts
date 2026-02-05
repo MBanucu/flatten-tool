@@ -6,6 +6,7 @@ import type {
   TreeFile,
   TreeRootDirectory,
 } from './treeBuilder.ts';
+import { compareChildren } from './utils.ts';
 
 export function renderMarkdownTree(
   node: TreeRootDirectory<string> | TreeDescendantDirectory<string>,
@@ -21,12 +22,7 @@ export function renderMarkdownTree(
 
   const entries = Object.entries(node.children);
 
-  entries.sort(([aKey, aValue], [bKey, bValue]) => {
-    const aDir = aValue.type === 'directory';
-    const bDir = bValue.type === 'directory';
-    if (aDir !== bDir) return aDir ? -1 : 1;
-    return aKey.toLowerCase().localeCompare(bKey.toLowerCase());
-  });
+  entries.sort(compareChildren);
 
   for (const [pathToChild, child] of entries) {
     writeStream.write(`${indent}- [${pathToChild}](#${child.slug})\n`);
