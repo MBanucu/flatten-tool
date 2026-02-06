@@ -24,7 +24,7 @@ Steps:
    Let last_version = the output (strip any leading 'v' if present).
 
 3. Fetch commits since the last release (including bodies for context):
-   !git log ${last_version}..HEAD --pretty=format:"%H%n%s%n%b%n---COMMIT_END---"
+   !git log v${last_version}..HEAD --pretty=format:"%H%n%s%n%b%n---COMMIT_END---"
 
    If no commits, respond: "No changes since last release. No changelog update needed."
 
