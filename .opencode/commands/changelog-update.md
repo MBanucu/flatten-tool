@@ -33,7 +33,7 @@ Let last_version = output of above.
 
 If no commits, respond: "No changes since last version. No update needed."
 
-4. Classify each commit message into categories (Added, Changed, Deprecated, Removed, Fixed, Security). Use conventional commit prefixes if present (feat: → Added, fix: → Fixed, breaking: → Changed with MAJOR bump).
+4. Only consider commit messages with conventional commit prefixes "feat:" and "fix:" for the changelog. Classify them into categories (feat: → Added, fix: → Fixed). Ignore other commit types.
 
 5. Determine version bump:
    - MAJOR if any breaking changes.
@@ -47,13 +47,7 @@ Compute next_version by incrementing from last_version accordingly.
 
 7. Get today's date: !date +%Y-%m-%d
 
-8. Decide on release strategy:
-   - For unreleased changes: Add or update the [Unreleased] section at the top.
-   - For a new release: Create new section ## [next_version] - today's_date
-
-Add the grouped changes to the appropriate section.
-
-If [Unreleased] exists, incorporate or replace it.
+8. Always add or update the [Unreleased] section at the top with the grouped changes. Do not create a new release section or compute a new version number.
 
 9. Preserve existing CHANGELOG content, inserting the new section after the header or updating [Unreleased] as appropriate.
 
