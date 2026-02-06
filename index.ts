@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 import { join } from 'node:path';
+import clipboard from 'clipboardy';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import pkg from './package.json' with { type: 'json' };
-import clipboard from 'clipboardy';
 
 import { flattenDirectory } from './src/flatten.ts';
 
@@ -109,7 +109,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
               clipboard.writeSync(content);
               console.log('Markdown content copied to clipboard.');
             } catch (err) {
-              console.error(`Failed to copy to clipboard: ${err instanceof Error ? err.message : err}`);
+              console.error(
+                `Failed to copy to clipboard: ${err instanceof Error ? err.message : err}`
+              );
             }
           }
         }
