@@ -4,7 +4,7 @@ subtask: true
 ---
 Follow these steps to update the CHANGELOG.md file based on recent changes in the git history.
 
-First, review the key guidelines from Keep a Changelog (https://keepachangelog.com/en/1.0.0/):
+First, review the key guidelines from Keep a Changelog (https://keepachangelog.com/en/1.1.0/):
 
 - Use CHANGELOG.md as the file name.
 - Follow reverse chronological order with the latest version first.
