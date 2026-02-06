@@ -51,6 +51,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "clipboardy": "^5.2.1",
     "github-slugger": "^2.0.0",
     "globby": "^16.1.0",
     "ignore": "^7.0.5",

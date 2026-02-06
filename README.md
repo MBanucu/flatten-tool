@@ -70,6 +70,7 @@ The `<source>` argument is optional and defaults to the current directory (`.`).
 
 ### Options
 
+- `--clipboard`, `-c`: Copy the generated Markdown content to clipboard (only for Markdown mode).
 - `--directory`, `-d`: Flatten to individual files in a directory instead of merging to Markdown.
 - `--move`, `-m`: Move files instead of copying (original files will be deleted).
 - `--overwrite`, `-o`: Overwrite existing target files.
@@ -133,6 +134,12 @@ Combine options:
 
 ```bash
 flatten-tool /path/to/source output.md --move --overwrite
+```
+
+Flatten current directory to Markdown and copy to clipboard:
+
+```bash
+flatten-tool --clipboard
 ```
 
 ## Testing
