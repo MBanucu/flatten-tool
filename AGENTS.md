@@ -10,6 +10,7 @@ This document provides essential information for AI coding agents working on the
 
 - devenv (recommended for development environment)
 - To check if in a devenv shell: run `env | grep -i devenv`
+- On NixOS: Prefer devenv scripts (e.g., `lint`, `format`) instead of `bun run` commands to avoid dynamic linking issues.
 
 ### Testing
 - All tests: `bun test`
