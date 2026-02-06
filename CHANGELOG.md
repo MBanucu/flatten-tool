@@ -5,10 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] / [next version]
+## [Unreleased]
 
 ### Added
 - `--clipboard` / `-c` option to copy generated Markdown to system clipboard using clipboardy library (fixed hanging issue with sync API)
+
+### Documentation
+- Update changelog link to v1.1.0
+- Update coding guidelines for devenv usage
+
+### Chore
+- Integrate devenv into development setup
+
+### Build
+- Update flake dependencies and remove dev shell
+- Include src directory in Nix package installation
 
 ## [1.9.0] - 2026-02-05
 
