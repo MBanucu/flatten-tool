@@ -64,12 +64,18 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             type: 'boolean',
             default: false,
           })
-          .option('clipboard', {
-            alias: 'c',
-            describe: 'Copy the generated Markdown content to clipboard (only for Markdown mode)',
-            type: 'boolean',
-            default: false,
-          });
+           .option('clipboard', {
+             alias: 'c',
+             describe: 'Copy the generated Markdown content to clipboard (only for Markdown mode)',
+             type: 'boolean',
+             default: false,
+           })
+           .option('dry-run', {
+             alias: 'n',
+             describe: 'Preview changes without modifying the filesystem',
+             type: 'boolean',
+             default: false,
+           });
       },
       async (argv) => {
         const source = argv.source as string;
@@ -81,6 +87,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         const flattenToDirectory = argv.directory as boolean;
         const verbose = argv.verbose as boolean;
         const clipboardEnabled = argv.clipboard as boolean;
+        const dryRun = argv.dryRun as boolean;
 
         if (!target) {
           target = flattenToDirectory
@@ -95,23 +102,27 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           respectGitignore,
           flattenToDirectory,
           verbose,
+          dryRun,
         });
-        const action = move ? 'moved' : 'copied';
-        const mode = flattenToDirectory ? 'directory' : 'Markdown file';
-        console.log(`Directory flattened successfully (${action}) into ${target} (${mode}).`);
 
-        if (clipboardEnabled) {
-          if (flattenToDirectory) {
-            console.warn('--clipboard is only supported in Markdown mode (without --directory).');
-          } else {
-            try {
-              const content = await Bun.file(target).text();
-              clipboard.writeSync(content);
-              console.log('Markdown content copied to clipboard.');
-            } catch (err) {
-              console.error(
-                `Failed to copy to clipboard: ${err instanceof Error ? err.message : err}`
-              );
+        if (!dryRun) {
+          const action = move ? 'moved' : 'copied';
+          const mode = flattenToDirectory ? 'directory' : 'Markdown file';
+          console.log(`Directory flattened successfully (${action}) into ${target} (${mode}).`);
+
+          if (clipboardEnabled) {
+            if (flattenToDirectory) {
+              console.warn('--clipboard is only supported in Markdown mode (without --directory).');
+            } else {
+              try {
+                const content = await Bun.file(target).text();
+                clipboard.writeSync(content);
+                console.log('Markdown content copied to clipboard.');
+              } catch (err) {
+                console.error(
+                  `Failed to copy to clipboard: ${err instanceof Error ? err.message : err}`
+                );
+              }
             }
           }
         }

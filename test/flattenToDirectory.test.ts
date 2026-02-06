@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { flattenDirectory } from '../src/flatten.ts';
+import { spyOn } from 'bun:test';
 
 let tempDir: string;
 let sourceDir: string;
@@ -320,4 +321,32 @@ test('handles multiple binary file types', async () => {
 
   const targetFiles = await readdir(targetDir);
   expect(targetFiles.sort()).toEqual(['archive.zip', 'doc.pdf', 'text.txt']);
+});
+
+test('previews flattening with dry-run without modifying files', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
+
+  const consoleSpy = spyOn(console, 'log');
+  await flattenDirectory(sourceDir, targetDir, {
+    move: false,
+    overwrite: false,
+    ignorePatterns: [],
+    respectGitignore: true,
+    flattenToDirectory: true,
+    dryRun: true,
+  });
+
+  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Dry run mode'));
+  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Would process 2 files'));
+  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Copy:'));
+  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('file1.txt'));
+  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('subdir_file2.txt'));
+
+  // Assert no changes
+  const targetFiles = await readdir(targetDir);
+  expect(targetFiles).toEqual([]);
+  const sourceFiles = await readdir(sourceDir);
+  expect(sourceFiles.sort()).toEqual(['file1.txt', 'subdir']);
 });

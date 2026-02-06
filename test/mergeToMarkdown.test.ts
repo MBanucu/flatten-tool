@@ -261,3 +261,29 @@ test('verbose mode logs directories searched', async () => {
   // The subdir should be logged
   expect(consoleSpy).toHaveBeenCalledWith(join(sourceDir, 'subdir'));
 });
+
+test('previews merge to Markdown with dry-run without modifying files', async () => {
+  await mkdir(join(sourceDir, 'subdir'));
+  await writeFile(join(sourceDir, 'file1.txt'), 'content1');
+  await writeFile(join(sourceDir, 'subdir', 'file2.txt'), 'content2');
+
+  const consoleSpy = spyOn(console, 'log');
+  await flattenDirectory(sourceDir, mdTarget, {
+    move: false,
+    overwrite: false,
+    ignorePatterns: [],
+    respectGitignore: true,
+    flattenToDirectory: false,
+    dryRun: true,
+  });
+
+  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Dry run mode'));
+  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Would process 2 files'));
+  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Copy:'));
+  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Would merge contents into Markdown file'));
+
+  // Assert no changes
+  const sourceFiles = await readdir(sourceDir);
+  expect(sourceFiles.sort()).toEqual(['file1.txt', 'subdir']);
+  await expect(readFile(mdTarget, 'utf8')).rejects.toThrow(); // File should not exist
+});

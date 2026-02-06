@@ -72,6 +72,7 @@ The `<source>` argument is optional and defaults to the current directory (`.`).
 
 - `--clipboard`, `-c`: Copy the generated Markdown content to clipboard (only for Markdown mode).
 - `--directory`, `-d`: Flatten to individual files in a directory instead of merging to Markdown.
+- `--dry-run`, `-n`: Preview changes without modifying the filesystem.
 - `--move`, `-m`: Move files instead of copying (original files will be deleted).
 - `--overwrite`, `-o`: Overwrite existing target files.
 - `--gitignore`, `-g`: Respect `.gitignore` files (default: true). Use `--no-gitignore` to disable.
@@ -140,6 +141,12 @@ Flatten current directory to Markdown and copy to clipboard:
 
 ```bash
 flatten-tool --clipboard
+```
+
+Preview flattening without changes:
+
+```bash
+flatten-tool --dry-run
 ```
 
 ## Testing
