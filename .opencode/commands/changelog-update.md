@@ -51,7 +51,7 @@ Compute next_version by incrementing from last_version accordingly.
 
 9. Preserve existing CHANGELOG content, inserting the new section after the header or updating [Unreleased] as appropriate.
 
-10. Output the full updated CHANGELOG.md content.
+10. Edit the CHANGELOG.md file with the updates and provide a summary of what changed (e.g., "Updated CHANGELOG.md: Added 2 new features and fixed 1 bug in the Unreleased section"). Do not output the full updated content.
 
 If $ARGUMENTS provided, use it as additional changes or override (e.g., /update-changelog "Added: new feature").
 
