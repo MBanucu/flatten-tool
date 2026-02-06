@@ -1,4 +1,4 @@
-import { readdir, rmdir, stat } from 'node:fs/promises';
+import { readdir, rmdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { SlugType, TreeDescendantDirectory, TreeFile } from './treeBuilder';
 
@@ -8,11 +8,13 @@ export function escapePathComponent(component: string): string {
 
 export async function removeEmptyDirs(dir: string, root?: string): Promise<void> {
   const entries = await readdir(dir, { withFileTypes: true });
+
   for (const entry of entries) {
     if (entry.isDirectory()) {
       await removeEmptyDirs(join(dir, entry.name), root);
     }
   }
+
   if (dir !== root) {
     try {
       await rmdir(dir);
@@ -23,13 +25,8 @@ export async function removeEmptyDirs(dir: string, root?: string): Promise<void>
 }
 
 export async function validateTargetPath(absTarget: string, overwrite: boolean): Promise<void> {
-  let targetExists = false;
-  try {
-    await stat(absTarget);
-    targetExists = true;
-  } catch (err: unknown) {
-    if (err && typeof err === 'object' && 'code' in err && err.code !== 'ENOENT') throw err;
-  }
+  const targetFile = Bun.file(absTarget);
+  const targetExists = await targetFile.exists();
 
   if (targetExists && !overwrite) {
     throw new Error(`Target file "${absTarget}" already exists. Use --overwrite to force.`);
@@ -46,6 +43,8 @@ export function compareChildren(
 ) {
   const aDir = a[1].type === 'directory';
   const bDir = b[1].type === 'directory';
+
   if (aDir !== bDir) return aDir ? -1 : 1;
+
   return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
 }

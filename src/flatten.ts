@@ -1,9 +1,9 @@
 import { rm, stat } from 'node:fs/promises';
-import { resolve, join, relative, sep } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { globby } from 'globby';
 import { flattenToDirectory } from './flattenToDirectory.ts';
 import { mergeToMarkdown } from './mergeToMarkdown.ts';
-import { removeEmptyDirs, escapePathComponent } from './utils.ts';
+import { escapePathComponent, removeEmptyDirs } from './utils.ts';
 
 interface FlattenOptions {
   move: boolean;
@@ -29,9 +29,14 @@ export async function flattenDirectory(
   }
 
   try {
-    await stat(source);
+    await stat(absSource);
   } catch {
     throw new Error(`Source directory "${source}" does not exist.`);
+  }
+
+  const sourceStat = await Bun.file(absSource).stat();
+  if (!sourceStat.isDirectory()) {
+    throw new Error(`Source "${source}" is not a directory.`);
   }
 
   const defaultIgnores = ['.git'];
@@ -102,7 +107,6 @@ export async function flattenDirectory(
       console.log('No files match the criteria.');
       return;
     }
-
     files.forEach((srcPath) => {
       const relPath = relative(absSource, srcPath);
       let tgtPath: string;
@@ -116,7 +120,6 @@ export async function flattenDirectory(
       const action = options.move ? 'Move' : 'Copy';
       console.log(`${action}: ${srcPath} -> ${tgtPath}`);
     });
-
     if (options.move) {
       console.log('Would remove original files and clean up empty directories.');
     }
@@ -126,12 +129,12 @@ export async function flattenDirectory(
     return;
   }
 
-  // Existing code continues here (actual flattening)...
   if (options.flattenToDirectory) {
     await flattenToDirectory(files, absSource, absTarget, options);
   } else {
     await mergeToMarkdown(files, absSource, absTarget, options);
   }
+
   if (options.move) {
     for (const srcPath of files) {
       await rm(srcPath, { force: true });

@@ -1,9 +1,8 @@
-import { afterEach, beforeEach, expect, test } from 'bun:test';
+import { afterEach, beforeEach, expect, spyOn, test } from 'bun:test';
 import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { flattenDirectory } from '../src/flatten.ts';
-import { spyOn } from 'bun:test';
 
 let tempDir: string;
 let sourceDir: string;

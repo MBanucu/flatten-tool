@@ -1,4 +1,4 @@
-import { copyFile, mkdir, rename, stat } from 'node:fs/promises';
+import { mkdir, rename, rm } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { escapePathComponent } from './utils.ts';
 
@@ -22,13 +22,8 @@ export async function flattenToDirectory(
     const newName = escapedComponents.join('_');
     const tgtPath = join(absTarget, newName);
 
-    let targetExists = false;
-    try {
-      await stat(tgtPath);
-      targetExists = true;
-    } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'code' in err && err.code !== 'ENOENT') throw err;
-    }
+    const targetFile = Bun.file(tgtPath);
+    const targetExists = await targetFile.exists();
 
     if (targetExists && !options.overwrite) {
       throw new Error(`Target file "${tgtPath}" already exists. Use --overwrite to force.`);
@@ -39,9 +34,19 @@ export async function flattenToDirectory(
     }
 
     if (options.move) {
-      await rename(srcPath, tgtPath);
+      try {
+        await rename(srcPath, tgtPath);
+      } catch (err: any) {
+        if (err.code === 'EXDEV') {
+          // Cross-device move: fallback to copy + delete
+          await Bun.write(tgtPath, Bun.file(srcPath));
+          await rm(srcPath, { force: true });
+        } else {
+          throw err;
+        }
+      }
     } else {
-      await copyFile(srcPath, tgtPath);
+      await Bun.write(tgtPath, Bun.file(srcPath));
     }
   }
 }

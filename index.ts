@@ -64,18 +64,18 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             type: 'boolean',
             default: false,
           })
-           .option('clipboard', {
-             alias: 'c',
-             describe: 'Copy the generated Markdown content to clipboard (only for Markdown mode)',
-             type: 'boolean',
-             default: false,
-           })
-           .option('dry-run', {
-             alias: 'n',
-             describe: 'Preview changes without modifying the filesystem',
-             type: 'boolean',
-             default: false,
-           });
+          .option('clipboard', {
+            alias: 'c',
+            describe: 'Copy the generated Markdown content to clipboard (only for Markdown mode)',
+            type: 'boolean',
+            default: false,
+          })
+          .option('dry-run', {
+            alias: 'n',
+            describe: 'Preview changes without modifying the filesystem',
+            type: 'boolean',
+            default: false,
+          });
       },
       async (argv) => {
         const source = argv.source as string;

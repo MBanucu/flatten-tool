@@ -280,7 +280,9 @@ test('previews merge to Markdown with dry-run without modifying files', async ()
   expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Dry run mode'));
   expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Would process 2 files'));
   expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Copy:'));
-  expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Would merge contents into Markdown file'));
+  expect(consoleSpy).toHaveBeenCalledWith(
+    expect.stringContaining('Would merge contents into Markdown file')
+  );
 
   // Assert no changes
   const sourceFiles = await readdir(sourceDir);
